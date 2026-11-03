@@ -11,6 +11,7 @@
 ![Runs locally](https://img.shields.io/badge/runs-127.0.0.1%20only-blue)
 ![Tokens used: 0](https://img.shields.io/badge/tokens%20used-0-purple)
 ![Agents: Claude · Codex · Gemini](https://img.shields.io/badge/agents-Claude%20·%20Codex%20·%20Gemini-orange)
+![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ![The world of Kafra: six towns on one island, a party bar of agents, and the Kafra Service panel](docs/images/world.jpg)
 
@@ -37,7 +38,7 @@ nothing into your agents, and makes no network calls. There's no
 > **Requirements:** Node 20+ · git · a terminal
 
 ```bash
-git clone https://github.com/ippohajime-engineering/kafra.git
+git clone https://github.com/isha93/kafra.git
 cd kafra
 ./kafra.sh
 ```
@@ -335,7 +336,12 @@ skills, never tool names, so nothing else needs to change.
 **More art.** See [web/assets/README.md](web/assets/README.md) to regenerate
 or replace it. To upgrade PixiJS, see `scripts/vendor-pixi.mjs`.
 
-## 🎨 About the art
+## 🎨 About the art, and a fan's note
+
+**Kafra is an unofficial fan project.** It is not affiliated with, endorsed
+by or connected to Gravity Co., Ltd. or Ragnarok Online. "Ragnarok Online",
+"Kafra" and the class and town names used here belong to their owners and
+appear only as a nod to the game this project is inspired by.
 
 Kafra is **inspired by** Ragnarok Online, not copied from it. Every original
 RO sprite, tileset, font and piece of music is copyright Gravity Co., Ltd., and
@@ -343,6 +349,11 @@ none of them are in this repo. The art here is original pixel art generated
 with Retro Diffusion from prompts that never name the game or its characters,
 with code-drawn fallbacks. The music is generated live in your browser. Town
 names are borrowed as names only.
+
+## 📜 License
+
+[MIT](LICENSE). PixiJS, vendored in `web/vendor/`, is MIT-licensed by its
+authors.
 
 <div align="center">
 
