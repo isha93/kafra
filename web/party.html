@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kafra — Party Window</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="window" id="party">
+  <div class="titlebar">
+    <span class="title">Party Window</span>
+    <span class="count"><span id="count">—</span> · <a href="/" style="color:#fff">Kafra City ↗</a></span>
+  </div>
+
+  <div class="columns">
+    <span class="c-sprite"></span>
+    <span class="c-name">Adventurer</span>
+    <span class="c-job">Job</span>
+    <span class="c-hp">Context</span>
+    <span class="c-status">Status</span>
+  </div>
+
+  <div id="rows" class="rows">
+    <div class="empty">Menghubungi Kafra…</div>
+  </div>
+
+  <div class="statusbar">
+    <span id="conn" class="conn off">offline</span>
+    <span id="scanned"></span>
+  </div>
+</div>
+
+<script src="app.js" type="module"></script>
+</body>
+</html>

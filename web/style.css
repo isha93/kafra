@@ -1,0 +1,171 @@
+/*
+ * Ragnarok Online flavour, drawn rather than copied.
+ *
+ * RO's windows are parchment panels with a hard bevel, a blue title bar and very
+ * small text. None of Gravity's sprites, tilesets or fonts are used here — these
+ * are CSS shapes. See the asset note in README.md.
+ */
+
+:root {
+  --parchment: #e8dcc0;
+  --parchment-dim: #d6c6a2;
+  --ink: #2e2416;
+  --ink-soft: #6b5c42;
+  --bevel-light: #fff8e6;
+  --bevel-dark: #8b7355;
+  --title-a: #6a8fc4;
+  --title-b: #3a5f98;
+  --hp-track: #3a2820;
+  --hp-high: #5cc030;
+  --hp-mid: #d8b020;
+  --hp-low: #c03028;
+  --active: #5cc030;
+  --idle: #d8b020;
+  --resting: #8b7355;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 24px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background:
+    radial-gradient(ellipse at 50% 0%, #2c3f5e 0%, #16202f 60%, #0d141e 100%);
+  font: 13px/1.4 "Lucida Grande", "Segoe UI", system-ui, sans-serif;
+  color: var(--ink);
+}
+
+.window {
+  width: min(880px, 100%);
+  background: var(--parchment);
+  border: 2px solid var(--bevel-dark);
+  border-top-color: var(--bevel-light);
+  border-left-color: var(--bevel-light);
+  box-shadow: 0 0 0 1px #1a1206, 0 12px 32px rgba(0, 0, 0, .55);
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  background: linear-gradient(var(--title-a), var(--title-b));
+  border-bottom: 2px solid var(--bevel-dark);
+  color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .6);
+}
+
+.title { font-weight: 700; letter-spacing: .04em; }
+.count { font-size: 11px; opacity: .85; }
+
+.columns,
+.row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 120px 150px 90px;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 10px;
+}
+
+.columns {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--ink-soft);
+  background: var(--parchment-dim);
+  border-bottom: 1px solid var(--bevel-dark);
+}
+
+.rows { min-height: 80px; }
+
+.row {
+  border-bottom: 1px solid rgba(139, 115, 85, .3);
+}
+.row:hover { background: rgba(255, 248, 230, .5); }
+
+.sprite { width: 32px; height: 32px; display: block; }
+
+.name { font-weight: 700; }
+.where {
+  font-size: 11px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.preview {
+  grid-column: 2 / -1;
+  font-size: 11px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-bottom: 2px;
+}
+
+.job { font-size: 11px; }
+
+.hp-wrap { display: flex; flex-direction: column; gap: 3px; }
+.hp {
+  height: 10px;
+  background: var(--hp-track);
+  border: 1px solid #1a1206;
+  overflow: hidden;
+}
+.hp i {
+  display: block;
+  height: 100%;
+  background: var(--hp-high);
+  transition: width .4s ease;
+}
+.hp.mid i { background: var(--hp-mid); }
+.hp.low i { background: var(--hp-low); }
+.hp-text { font-size: 10px; color: var(--ink-soft); }
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+}
+.dot {
+  width: 8px; height: 8px;
+  border: 1px solid #1a1206;
+  background: var(--resting);
+}
+.status.active .dot { background: var(--active); animation: pulse 1.2s infinite; }
+.status.idle .dot { background: var(--idle); }
+
+@keyframes pulse { 50% { opacity: .35; } }
+
+.empty, .statusbar {
+  padding: 10px;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  background: var(--parchment-dim);
+  border-top: 1px solid var(--bevel-dark);
+}
+
+.conn::before { content: "● "; }
+.conn.on { color: #2f7d1f; }
+.conn.off { color: #a03028; }
+
+@media (prefers-reduced-motion: reduce) {
+  .status.active .dot { animation: none; }
+  .hp i { transition: none; }
+}
+
+@media (max-width: 640px) {
+  .columns { display: none; }
+  .row { grid-template-columns: 32px minmax(0, 1fr) 100px; }
+  .row .job, .row .status { display: none; }
+}

@@ -1,0 +1,281 @@
+{
+  "characters": {
+    "knight": {
+      "sheet": "characters/knight.json",
+      "scale": 1.25,
+      "anchor": [
+        0.508,
+        0.734
+      ]
+    },
+    "assassin": {
+      "sheet": "characters/assassin.json",
+      "scale": 1.25,
+      "anchor": [
+        0.516,
+        0.734
+      ]
+    },
+    "hunter": {
+      "sheet": "characters/hunter.json",
+      "scale": 1.25,
+      "anchor": [
+        0.516,
+        0.734
+      ]
+    },
+    "bard": {
+      "sheet": "characters/bard.json",
+      "scale": 1.25,
+      "anchor": [
+        0.516,
+        0.734
+      ]
+    },
+    "novice": {
+      "sheet": "characters/novice.json",
+      "scale": 1.25,
+      "anchor": [
+        0.516,
+        0.734
+      ]
+    },
+    "kafra": {
+      "sheet": "characters/kafra.json",
+      "scale": 1.25,
+      "anchor": [
+        0.508,
+        0.734
+      ]
+    },
+    "villager1": {
+      "sheet": "characters/villager1.json",
+      "scale": 1.25,
+      "anchor": [
+        0.508,
+        0.734
+      ]
+    },
+    "villager2": {
+      "sheet": "characters/villager2.json",
+      "scale": 1.25,
+      "anchor": [
+        0.508,
+        0.734
+      ]
+    },
+    "villager3": {
+      "sheet": "characters/villager3.json",
+      "scale": 1.25,
+      "anchor": [
+        0.516,
+        0.734
+      ]
+    }
+  },
+  "buildings": {
+    "district-1": {
+      "image": "buildings/district-1.png",
+      "scale": 0.771,
+      "anchor": [
+        0.504,
+        0.713
+      ]
+    },
+    "district-2": {
+      "image": "buildings/district-2.png",
+      "scale": 0.753,
+      "anchor": [
+        0.496,
+        0.701
+      ]
+    },
+    "district-3": {
+      "image": "buildings/district-3.png",
+      "scale": 0.688,
+      "anchor": [
+        0.52,
+        0.764
+      ]
+    },
+    "district-4": {
+      "image": "buildings/district-4.png",
+      "scale": 0.821,
+      "anchor": [
+        0.523,
+        0.77
+      ]
+    },
+    "district-5": {
+      "image": "buildings/district-5.png",
+      "scale": 1.016,
+      "anchor": [
+        0.512,
+        0.846
+      ]
+    },
+    "library": {
+      "image": "buildings/library.png",
+      "scale": 1.185,
+      "anchor": [
+        0.508,
+        0.832
+      ]
+    },
+    "workshop": {
+      "image": "buildings/workshop.png",
+      "scale": 0.604,
+      "anchor": [
+        0.516,
+        0.707
+      ]
+    },
+    "inn": {
+      "image": "buildings/inn.png",
+      "scale": 0.582,
+      "anchor": [
+        0.508,
+        0.715
+      ]
+    },
+    "arena": {
+      "image": "buildings/arena.png",
+      "scale": 0.778,
+      "anchor": [
+        0.504,
+        0.635
+      ]
+    },
+    "kafra": {
+      "image": "buildings/kafra.png",
+      "scale": 0.659,
+      "anchor": [
+        0.521,
+        0.719
+      ]
+    },
+    "tent": {
+      "image": "buildings/tent.png",
+      "scale": 0.786,
+      "anchor": [
+        0.5,
+        0.641
+      ]
+    },
+    "castle": {
+      "image": "buildings/castle.png",
+      "scale": 2.113,
+      "anchor": [
+        0.504,
+        0.729
+      ]
+    }
+  },
+  "decor": {
+    "tree": {
+      "image": "decor/tree.png",
+      "scale": 0.649,
+      "anchor": [
+        0.508,
+        0.781
+      ]
+    },
+    "lamp": {
+      "image": "decor/lamp.png",
+      "scale": 0.533,
+      "anchor": [
+        0.508,
+        0.969
+      ]
+    },
+    "flowers": {
+      "image": "decor/flowers.png",
+      "scale": 0.276,
+      "anchor": [
+        0.5,
+        0.828
+      ]
+    },
+    "bench": {
+      "image": "decor/bench.png",
+      "scale": 0.444,
+      "anchor": [
+        0.5,
+        0.781
+      ]
+    },
+    "palm": {
+      "image": "decor/palm.png",
+      "scale": 0.686,
+      "anchor": [
+        0.508,
+        0.859
+      ]
+    },
+    "pine": {
+      "image": "decor/pine.png",
+      "scale": 0.595,
+      "anchor": [
+        0.508,
+        0.875
+      ]
+    },
+    "campfire": {
+      "image": "decor/campfire.png",
+      "scale": 0.34,
+      "anchor": [
+        0.523,
+        0.875
+      ]
+    }
+  },
+  "tiles": {
+    "grass": {
+      "image": "tiles/grass.png"
+    },
+    "road": {
+      "image": "tiles/road.png"
+    },
+    "plaza": {
+      "image": "tiles/plaza.png"
+    },
+    "sand": {
+      "image": "tiles/sand.png"
+    },
+    "snow": {
+      "image": "tiles/snow.png"
+    }
+  },
+  "icons": {
+    "build": {
+      "image": "icons/build.png"
+    },
+    "research": {
+      "image": "icons/research.png"
+    },
+    "craft": {
+      "image": "icons/craft.png"
+    },
+    "trial": {
+      "image": "icons/trial.png"
+    },
+    "deliver": {
+      "image": "icons/deliver.png"
+    },
+    "teleport": {
+      "image": "icons/teleport.png"
+    },
+    "summon": {
+      "image": "icons/summon.png"
+    },
+    "cast": {
+      "image": "icons/cast.png"
+    },
+    "waiting": {
+      "image": "icons/waiting.png"
+    },
+    "resting": {
+      "image": "icons/resting.png"
+    }
+  }
+}

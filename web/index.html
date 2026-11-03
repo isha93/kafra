@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kafra City</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="city.css">
+</head>
+<body class="city">
+
+<div id="stage" class="stage"></div>
+
+<div class="window panel worldmap">
+  <div class="titlebar">
+    <span class="title">World Map</span>
+    <a class="count" href="party.html" title="Tampilan tabel">Party Window ↗</a>
+  </div>
+  <div id="towns" class="towns"><div class="empty">Menghubungi Kafra…</div></div>
+  <div class="statusbar">
+    <span id="conn" class="conn off">offline</span>
+    <span id="census"></span>
+  </div>
+</div>
+
+<div class="window panel info">
+  <div class="titlebar">
+    <span class="title" id="detail-title">Kafra Service</span>
+    <span class="count">Tab · Esc · M</span>
+  </div>
+  <div id="detail" class="detail"></div>
+</div>
+
+<div class="window panel partybar">
+  <div class="titlebar">
+    <span class="title">Party</span>
+    <span class="count">
+      <button id="notify" class="tb-btn" type="button">🔔 notifikasi</button>
+      <button id="sound" class="tb-btn" type="button">🔈 suara</button>
+    </span>
+  </div>
+  <div id="party" class="party-row"></div>
+</div>
+
+<div class="window panel chat">
+  <div class="titlebar"><span class="title">Chat Log</span></div>
+  <div id="log" class="log"></div>
+</div>
+
+<script src="city/main.js" type="module"></script>
+</body>
+</html>
