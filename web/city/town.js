@@ -34,6 +34,11 @@ function artOr(key, fallback) {
   return { g: sprite, height: sprite.height };
 }
 
+/** "owner/name", or whichever half exists (public mode blanks the name). */
+export const repoLabel = (t) => [t.owner, t.name].filter(Boolean).join('/');
+/** A folder gets a trailing slash; the root and public mode's numbered districts don't. */
+export const districtLabel = (name) => (name === '(root)' ? 'Balai Kota' : name.startsWith('Distrik') ? name : `${name}/`);
+
 /** What a town's look is built from; when this changes the town is rebuilt from scratch. */
 export const growthKey = (t) => `${t.tier?.id}|${t.biome?.id}|${t.mood}`;
 
@@ -184,7 +189,7 @@ export class Town {
     rank.position.set(top.x, top.y - 98);
     // High enough to clear the library tower in the north corner.
     name.position.set(top.x, top.y - 150);
-    const repo = label(`${data.owner ? data.owner + '/' : ''}${data.name}${data.branch ? `  ⎇ ${data.branch}` : ''}`, {
+    const repo = label(`${repoLabel(data)}${data.branch ? `  ⎇ ${data.branch}` : ''}`, {
       size: 10, color: 0xffe08a, weight: 'normal',
     });
     repo.position.set(top.x, top.y - 124);
@@ -225,7 +230,7 @@ export class Town {
       view.addChild(g);
       // Art includes its roof, so scaffolding stops at the eaves, about 60% up.
       if (d.dirty > 0) view.addChild(scaffolding(buildingArt.has(art) ? height * 0.6 : height - 10));
-      const sign = signboard(d.name === '(root)' ? 'Balai Kota' : `${d.name}/`);
+      const sign = signboard(districtLabel(d.name));
       sign.position.set(0, 26);
       view.addChild(sign);
       view.eventMode = 'static';

@@ -229,7 +229,7 @@ async function readParty(dir, sessionId, cwd) {
         ...agent,
         id: `${sessionId}/${file.replace('.jsonl', '')}`,
         cwd: meta.cwd || cwd,
-        branch: meta.gitBranch,
+        branch: redact(meta.gitBranch),
         isParty: true,
         title: redact(info.description ?? agent.title),
         agentType: info.agentType ?? 'subagent',
@@ -253,7 +253,7 @@ async function readSession(dir, file) {
     id,
     map: meta.cwd.split('/').filter(Boolean).pop() ?? '?',
     cwd: meta.cwd,
-    branch: meta.gitBranch,
+    branch: redact(meta.gitBranch),
     isParty: meta.isSidechain,
     party: await readParty(dir, id, meta.cwd),
   };

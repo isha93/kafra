@@ -1,5 +1,7 @@
 import { listSessions } from './sources/claude-code.mjs';
 import { repoRootOf, repoStats, districtOfFile } from './repos.mjs';
+import { loadConfig, visible, publicWorld } from './privacy.mjs';
+import { redact } from './activity.mjs';
 
 /**
  * One repo, one town.
@@ -73,13 +75,18 @@ function touchedDistricts(agent, root) {
 }
 
 export async function buildWorld() {
+  // Read first: redaction words are applied while transcripts are parsed.
+  const config = loadConfig();
   const { sessions, error, scannedAt } = await listSessions();
   if (error) return { error, towns: [], scannedAt };
 
   const towns = new Map();
 
   for (const s of sessions) {
+    // Hidden repos are dropped before git is ever run on them.
+    if (!visible(s.cwd, config)) continue;
     const root = await repoRootOf(s.cwd);
+    if (root && !visible(root, config)) continue;
     const key = root ?? 'field';
     if (!towns.has(key)) {
       towns.set(key, { root, agents: [] });
@@ -110,12 +117,14 @@ export async function buildWorld() {
     out.push({
       id: key,
       town: root ? names.get(root) : FIELD.town,
-      name: stats.name ?? FIELD.name,
-      owner: stats.owner ?? '',
+      // Repo, owner, branch and commit text can name a client too, so they get
+      // the same redaction as transcript text.
+      name: redact(stats.name ?? FIELD.name),
+      owner: redact(stats.owner ?? ''),
       root,
-      branch: stats.branch ?? '',
+      branch: redact(stats.branch ?? ''),
       districts: stats.districts ?? [],
-      commits: stats.commits ?? [],
+      commits: (stats.commits ?? []).map((c) => ({ ...c, subject: redact(c.subject), author: redact(c.author) })),
       totals: stats.totals ?? { files: 0, commitsWeek: 0, dirty: 0 },
       growth: stats.growth ?? null,
       tier: stats.tier ?? { id: 'camp', name: 'Camp', stars: 1, cap: 1, next: null },
@@ -130,5 +139,6 @@ export async function buildWorld() {
 
   // Busy towns first, then most recently visited.
   out.sort((a, b) => b.active - a.active || a.lastSeenMs - b.lastSeenMs);
-  return { towns: out, scannedAt };
+  const world = { towns: out, scannedAt, configError: config.error ?? undefined };
+  return config.public ? publicWorld(world) : world;
 }

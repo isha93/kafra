@@ -88,10 +88,27 @@ const SECRET_RES = [
   /((?:api[_-]?key|token|secret|password|passwd)\s*[=:]\s*)["']?[^\s"']{6,}/gi,
 ];
 
+/** Words and patterns from kafra.config.json `redact`, e.g. client names or internal hosts. */
+let extra = [];
+
+/**
+ * Set the user's own redactions. "/regex/flags" is a regular expression;
+ * anything else is a literal, matched case-insensitively.
+ */
+export function setExtraRedactions(list = []) {
+  extra = list.flatMap((s) => {
+    const m = s.match(/^\/(.+)\/([a-z]*)$/);
+    try {
+      return [m ? new RegExp(m[1], m[2].includes('g') ? m[2] : `${m[2]}g`) : new RegExp(s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')];
+    } catch { return []; }
+  });
+}
+
 export function redact(text) {
   let out = String(text ?? '');
   for (const re of SECRET_RES) {
     out = out.replace(re, (m, prefix) => (typeof prefix === 'string' ? `${prefix}••••` : '••••'));
   }
+  for (const re of extra) out = out.replace(re, '••••');
   return out;
 }

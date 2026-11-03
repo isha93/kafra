@@ -5,6 +5,15 @@ import { fileURLToPath } from 'node:url';
 import { listSessions, PROJECTS_DIR } from './sources/claude-code.mjs';
 import { buildWorld } from './world.mjs';
 import { allowedHost, allowedOrigin, SECURITY_HEADERS } from './guard.mjs';
+import { loadConfig, visible, publicSessions, CONFIG_PATH } from './privacy.mjs';
+
+/** The party window's sessions, through the same privacy rules as the world. */
+async function sessionsView() {
+  const config = loadConfig();
+  const data = await listSessions();
+  data.sessions = (data.sessions ?? []).filter((s) => visible(s.cwd, config));
+  return config.public ? publicSessions(data) : data;
+}
 
 const PORT = Number(process.env.KAFRA_PORT ?? 4317);
 
@@ -111,9 +120,9 @@ createServer(async (req, res) => {
 
   const path = req.url.split('?')[0];
   if (path === '/api/sessions') {
-    return send(res, 200, 'application/json', JSON.stringify(await listSessions()));
+    return send(res, 200, 'application/json', JSON.stringify(await sessionsView()));
   }
-  if (path === '/api/stream') return stream(res, listSessions);
+  if (path === '/api/stream') return stream(res, sessionsView);
   if (path === '/api/world') {
     return send(res, 200, 'application/json', JSON.stringify(await buildWorld()));
   }
@@ -133,4 +142,8 @@ createServer(async (req, res) => {
 }).listen(PORT, HOST, () => {
   console.log(`⚔  Kafra siap di http://${HOST}:${PORT}`);
   console.log(`   membaca ${PROJECTS_DIR} (read-only)`);
+  const config = loadConfig();
+  if (config.error) console.log(`   ⚠ ${config.error}`);
+  if (config.hide.length || config.only.length || config.redact.length) console.log(`   privasi: ${CONFIG_PATH}`);
+  if (config.public) console.log('   MODE PUBLIK: semua teks, path, dan nama repo disembunyikan');
 });

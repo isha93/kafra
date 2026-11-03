@@ -204,3 +204,5 @@ body.city {
   background: rgba(139, 115, 85, .18);
   border-bottom: 1px solid rgba(139, 115, 85, .4);
 }
+
+.mode { font-weight: 700; color: #2a4f8a; }

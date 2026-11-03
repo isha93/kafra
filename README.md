@@ -13,6 +13,7 @@ working directory.
 ./kafra.sh            # checks Node, runs npm install once, opens your world → http://127.0.0.1:4317
 ./kafra.sh demo       # sample town with every animation                    → :4318
 ./kafra.sh simulate   # six fake towns that keep working                    → :4319
+./kafra.sh public     # your world with all text removed, safe to share     → :4317
 ./kafra.sh help
 ```
 
@@ -140,6 +141,40 @@ so without this an agent would look like it is "casting" almost all the time.
 - **Time and weather.** Day and night follow your local clock, and a town
   rains while a tool there is failing. To preview them: `?hour=21`,
   `?weather=rain`, `?weather=clear`.
+
+## Privacy
+
+Copy `kafra.config.example.json` to `kafra.config.json` (gitignored). Changes
+apply on the next update, with no restart.
+
+```json
+{
+  "hide": ["~/Documents/Clients/*", "secret-prototype"],
+  "only": [],
+  "redact": ["Acme Corp", "/internal\\.[a-z]+\\.com/"],
+  "public": false
+}
+```
+
+- **`hide`:** repos (or working directories) that never appear. Git is never
+  even run on them.
+- **`only`:** when not empty, only these appear.
+- **`redact`:** extra words (case-insensitive) or `/regex/` patterns masked as
+  `••••`, on top of the built-in credential patterns. This covers prompts,
+  titles, repo and branch names, and commit subjects.
+- **Patterns:** `*` matches within one folder, `**` across folders, and a
+  leading `~` is your home folder. A name without a slash matches that folder
+  anywhere.
+
+**Public mode** (`./kafra.sh public`, or `"public": true`) keeps the game and
+drops every piece of text. Towns, tiers, biomes, activity kinds and statuses
+stay. Prompts, titles, paths, repo and branch names, commit subjects and
+hashes are removed, and kingdoms and districts are numbered instead of named.
+This happens **on the server**, so the data never reaches the browser. Use it
+for screen sharing and streaming.
+
+Kafra has no login on purpose. Don't expose it to the internet. To view it
+from another device, use Tailscale or an SSH tunnel.
 
 ## Safety
 

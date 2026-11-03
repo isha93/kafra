@@ -1,0 +1,6 @@
+{
+  "hide": ["~/Documents/Clients/*", "secret-prototype"],
+  "only": [],
+  "redact": ["Acme Corp", "/internal\\.[a-z]+\\.com/"],
+  "public": false
+}

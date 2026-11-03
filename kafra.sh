@@ -5,6 +5,7 @@
 #   ./kafra.sh            siapkan (sekali) lalu buka kota dengan agent aslimu
 #   ./kafra.sh demo       kota contoh dengan semua animasi
 #   ./kafra.sh simulate   enam kota palsu yang hidup terus
+#   ./kafra.sh public     kotamu tanpa teks apa pun, aman untuk dipamerkan
 #   ./kafra.sh setup      cuma siapkan (cek Node, npm install)
 #   ./kafra.sh test       jalankan test
 #   ./kafra.sh help       bantuan
@@ -47,12 +48,15 @@ usage() {
     ${GOLD}(kosong)${OFF}   siapkan lalu buka kota dengan agent aslimu   → http://127.0.0.1:4317
     ${GOLD}demo${OFF}       kota contoh, semua animasi sekaligus          → http://127.0.0.1:4318
     ${GOLD}simulate${OFF}   enam kota palsu yang hidup terus              → http://127.0.0.1:4319
+    ${GOLD}public${OFF}     kotamu tanpa teks: aman untuk layar bersama   → http://127.0.0.1:4317
     ${GOLD}setup${OFF}      cuma cek Node dan npm install
     ${GOLD}test${OFF}       jalankan test
     ${GOLD}help${OFF}       pesan ini
 
   ${BOLD}Di dalam kota:${OFF} geser = drag · zoom = scroll · Tab = lompat antar agent
                   M = lihat seluruh dunia · Esc = batal pilih
+  ${BOLD}Privasi:${OFF} salin kafra.config.example.json ke kafra.config.json untuk
+           menyembunyikan repo (hide/only) atau menyensor kata (redact).
   ${BOLD}Berhenti:${OFF} Ctrl+C
 
 EOF
@@ -149,6 +153,11 @@ case "$cmd" in
   start|"")
     banner; setup; check_claude
     run start "${KAFRA_PORT:-4317}" src/server.mjs "Membuka kota-kota tempat agent-mu bekerja…" ;;
+  public)
+    banner; setup
+    kafra "Mode publik: nama repo, path, prompt, dan judul commit disembunyikan di server."
+    export KAFRA_PUBLIC=1
+    run public "${KAFRA_PORT:-4317}" src/server.mjs "Membuka kota-kotamu dalam mode publik…" ;;
   demo)
     banner; setup
     run demo "${KAFRA_PORT:-4318}" scripts/demo.mjs "Membuka kota contoh: 12 adventurer, semua jenis aktivitas." ;;

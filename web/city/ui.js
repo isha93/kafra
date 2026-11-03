@@ -6,6 +6,7 @@
  */
 
 import { iconFor, characterSheets } from './assets.js';
+import { repoLabel, districtLabel } from './town.js';
 import { STATUS, statusOf, since, duration } from './status.js';
 
 const $ = (id) => document.getElementById(id);
@@ -76,6 +77,9 @@ export function renderTowns(data, selection, pick) {
     const b = e.target.closest('.town');
     if (b) pick({ type: 'town', id: b.dataset.id });
   };
+  // Say so when the view is filtered: nobody should mistake public mode for "no data".
+  $('mode').textContent = data.public ? '🔒 publik' : data.configError ? '⚠ config' : '';
+  $('mode').title = data.configError ?? (data.public ? 'Semua teks disembunyikan oleh server' : '');
   const active = data.towns.reduce((n, t) => n + t.active, 0);
   const total = data.towns.reduce((n, t) => n + t.agents.length, 0);
   $('census').textContent = `${active} aktif · ${total} adventurer · ${data.towns.length} kota`;
@@ -142,7 +146,7 @@ function townDetail(t) {
   return `
     <div class="who">
       <div><b>${esc(t.town)}</b></div>
-      <div class="muted">${esc(t.owner ? t.owner + '/' : '')}${esc(t.name)}${t.branch ? ` · ⎇ ${esc(t.branch)}` : ''}</div>
+      <div class="muted">${esc(repoLabel(t))}${t.branch ? ` · ⎇ ${esc(t.branch)}` : ''}</div>
     </div>
     <div class="kafra-say">“Selamat datang di Kafra! Ini catatan pembangunan kota ${esc(t.town)}.”</div>
     <div class="stat"><span class="lbl">Tingkat</span><b>${'★'.repeat(t.tier?.stars ?? 1)}${'☆'.repeat(5 - (t.tier?.stars ?? 1))} ${esc(t.tier?.name ?? '')}</b>
@@ -158,7 +162,7 @@ function townDetail(t) {
       <span class="muted">${esc((a.title || '').slice(0, 40))}</span></li>`).join('')}</ul>
     <div class="sub">Distrik</div>
     <ul class="districts">${t.districts.map((d) => `
-      <li><a href="#" data-district="${esc(d.name)}">${esc(d.name === '(root)' ? 'Balai Kota' : d.name + '/')}</a>
+      <li><a href="#" data-district="${esc(d.name)}">${esc(districtLabel(d.name))}</a>
       <span class="muted">${d.files} file${d.dirty ? ` · 🚧 ${d.dirty}` : ''}${d.churn ? ` · ${d.churn} baris/minggu` : ''}</span></li>`).join('')}</ul>
     <div class="sub">Build log (7 hari)</div>
     ${commitList(t.commits)}
@@ -173,7 +177,7 @@ function districtDetail(t, name) {
   const commits = t.commits.filter((c) => c.districts.includes(name));
   return `
     <div class="who">
-      <div><b>${esc(name === '(root)' ? 'Balai Kota' : name + '/')}</b></div>
+      <div><b>${esc(districtLabel(name))}</b></div>
       <div class="muted">${esc(t.town)} · ${esc(t.name)}</div>
     </div>
     <div class="stat"><span class="lbl">Ukuran</span>${d.files} file</div>
