@@ -1,34 +1,61 @@
+<div align="center">
+
 # ⚔️ Kafra
 
-> A Ragnarok-style world for your AI coding agents. Every repo is a town, every
-> agent a character, and you can see what each one is building, live or
-> replayed.
+**An adventurer's guide to watching your AI coding agents**
 
-Kafra Corporation serves adventurers in every town of Rune-Midgard: storage,
-teleports, save points. This repo serves your Claude Code, Codex and Gemini
-agents in every working directory.
+*Every repo is a town. Every agent is a character. Watch them build, live or replayed.*
+
+![Node 20+](https://img.shields.io/badge/node-20%2B-3c873a)
+![Dependencies: 0](https://img.shields.io/badge/dependencies-0-success)
+![Runs locally](https://img.shields.io/badge/runs-127.0.0.1%20only-blue)
+![Tokens used: 0](https://img.shields.io/badge/tokens%20used-0-purple)
+![Agents: Claude · Codex · Gemini](https://img.shields.io/badge/agents-Claude%20·%20Codex%20·%20Gemini-orange)
+
+![The world of Kafra: six towns on one island, a party bar of agents, and the Kafra Service panel](docs/images/world.jpg)
+
+</div>
+
+> *"Welcome to Kafra Service! We look after adventurers in every town of
+> Rune-Midgard: storage, teleports, save points."* Here, the adventurers are
+> your Claude Code, Codex and Gemini agents, and the towns are your repos.
+
+Running several agents at once means hopping between terminals to find out who
+is working, who is waiting for you, and whose context is about to run out.
+Kafra puts all of them on one map. You can rewind the day to see what happened
+while you were away, and get a ping the moment someone needs you.
 
 **Everything runs on your machine.** Kafra reads the session files your agents
-already write and your repos' git metadata. It never calls a model, uses no
-tokens, installs nothing into your agents, and makes no network calls. There is
-no `npm install` either: everything it needs is in this repo.
+already write, plus git. It never calls a model, spends no tokens, installs
+nothing into your agents, and makes no network calls. There's no
+`npm install` either.
 
-## Quick start
+---
 
-Requires Node 20+ and git.
+## 📜 Quest 1: Enter the world
+
+> **Requirements:** Node 20+ · git · a terminal
 
 ```bash
-./kafra.sh            # open your world                          → http://127.0.0.1:4317
-./kafra.sh demo       # a sample town showing every animation    → :4318
-./kafra.sh simulate   # six fake towns that keep working         → :4319
-./kafra.sh public     # your world with all text removed         → :4317
-./kafra.sh menubar    # macOS menu bar icon and notifications (via SwiftBar)
-./kafra.sh autostart on|off|status   # start Kafra at every macOS login
-./kafra.sh clean      # remove Kafra's temporary files (simulation, demo, tests)
-./kafra.sh help
+git clone https://github.com/ippohajime-engineering/kafra.git
+cd kafra
+./kafra.sh
 ```
 
-`KAFRA_PORT` changes the port, and `KAFRA_NO_OPEN=1` skips opening the browser.
+- [ ] Your browser opens **http://127.0.0.1:4317**: every repo with an agent becomes a town.
+- [ ] Click an agent to see its quest, HP and recent actions.
+- [ ] Press `M` to see the whole world, and `Tab` to hop between agents.
+
+**Side quests**
+
+| Command | Reward |
+|---|---|
+| `./kafra.sh demo` | a sample town showing every animation → `:4318` |
+| `./kafra.sh simulate` | six fake towns with ten agents, working forever → `:4319` |
+| `./kafra.sh public` | your world with every word removed, safe for streaming |
+| `./kafra.sh menubar` | `⚔ 2` in your macOS menu bar, and native notifications |
+| `./kafra.sh autostart on` | Kafra opens by itself whenever you log in to your Mac |
+| `./kafra.sh clean` | sweep away Kafra's temporary files |
 
 **Controls**
 
@@ -36,148 +63,167 @@ Requires Node 20+ and git.
 |---|---|
 | Drag / scroll | pan / zoom |
 | Click | details for an agent, building, town or the Kafra booth |
-| `Tab` | jump between active agents; the camera follows until you drag |
-| `M` | show the whole world |
-| `R` | open or close replay; `Space` plays or pauses it |
-| `Esc` | clear the selection, close the newspaper |
+| `Tab` | next active agent; the camera follows until you drag |
+| `M` | world map |
+| `R` / `Space` | open replay / play–pause |
+| `Esc` | clear selection, close the newspaper, leave replay |
 
-## Why this exists
+---
 
-Running several agents at once means hopping between terminals to find out who
-is working, who is waiting for an answer, and whose context is almost full.
-Kafra shows all of it in one place, and lets you rewind to see what happened
-while you were away.
+## 🗺️ The world of Rune-Midgard
 
-It is inspired by [Vibecraft](https://vibecraft.sh), with two deliberate
-differences: monitoring never touches your agents' configuration (Kafra only
-reads files, so it is risk-free to try), and it looks like Ragnarok Online
-rather than a 3D hex grid.
-
-## Agents it reads
-
-| Agent | Sessions | Class |
-|---|---|---|
-| Claude Code | `~/.claude/projects/` | by model: Opus = Lord Knight, Sonnet = Assassin Cross, Haiku = Hunter, Fable = Bard |
-| Codex (CLI and Desktop) | `~/.codex/sessions/` | Wizard |
-| Gemini CLI | `~/.gemini/tmp/` | Sage |
-
-Each source is one parser in `src/sources/` that turns its tool's own format
-into a shared session shape, so the city, privacy rules, menu bar, alerts and
-replay work the same for every agent. Gemini's folders are named by a hash of
-the working directory; Kafra finds the directory by hashing folders it already
-knows, and skips sessions it can't place rather than guessing.
-
-- `KAFRA_SOURCES=claude-code,codex` limits which sources are read.
-- `KAFRA_MAX_AGE_DAYS` (default 7) sets how far back sessions appear. Older
-  agents rest at the inn.
-
-## The world
-
-| Real world | Kafra |
+| Your world | In Kafra |
 |---|---|
-| GitHub owner | **Kingdom**: an island; repos without a remote live in *Tanah Liar* (the Wilds) |
-| Git repo | **Town**, with a stable Rune-Midgard name |
-| Top-level folder (`src/`, `web/`) | **District building** |
-| Uncommitted files | **Scaffolding** on that building |
-| New commit | fireworks and "Level Up!" in the plaza, and an entry in the build log |
-| Agent session | **Character**; its context left is the **HP bar** |
-| Subagent | **Party member**, next to its leader |
+| GitHub owner | 🏝️ **Kingdom**: its own island (repos without a remote live in *Tanah Liar*) |
+| Git repo | 🏘️ **Town**, with a Rune-Midgard name that stays the same |
+| Top-level folder (`src/`, `web/`) | 🏠 **District building** |
+| Uncommitted files | 🚧 **Scaffolding** on that building |
+| A new commit | 🎆 Fireworks and **"Level Up!"** in the plaza |
+| Agent session | 🧙 **Character**, whose HP bar is its remaining context |
+| Subagent | 👥 **Party member**, beside its leader |
 
-### Towns grow with the repo
+## 🛡️ Class roster
 
-A town's **tier** comes from its number of files, number of commits and age
-(`src/growth.mjs`). The commit floor keeps a large import with few commits from
-jumping tiers.
+The tool picks the family and the model picks the rank, so you can tell
+Claude from Codex from Gemini, and Opus from Haiku, at a glance.
 
-| Tier | Roughly | Looks like |
+| | Class | Agent |
+|:-:|---|---|
+| <img src="docs/images/classes/knight.png" height="72" alt="Lord Knight"> | **Lord Knight** | Claude Opus |
+| <img src="docs/images/classes/assassin.png" height="72" alt="Assassin Cross"> | **Assassin Cross** | Claude Sonnet |
+| <img src="docs/images/classes/hunter.png" height="72" alt="Hunter"> | **Hunter** | Claude Haiku |
+| <img src="docs/images/classes/bard.png" height="72" alt="Bard"> | **Bard** | Claude Fable |
+| <img src="docs/images/classes/wizard.png" height="72" alt="Wizard"> | **Wizard** | Codex (CLI and Desktop) |
+| <img src="docs/images/classes/sage.png" height="72" alt="Sage"> | **Sage** | Gemini CLI |
+| <img src="docs/images/classes/novice.png" height="72" alt="Novice"> | **Novice** | any model Kafra doesn't recognise |
+| <img src="docs/images/classes/kafra.png" height="72" alt="Kafra attendant"> | *Kafra attendant* | an NPC at every booth; click the booth for the town's build log |
+
+## ✨ Skills
+
+What an agent does decides where it walks and what it plays.
+
+| | Skill | Triggered by | Where and how |
+|:-:|---|---|---|
+| <img src="web/assets/icons/build.png" height="28"> | **Build** | Edit, Write, `apply_patch` | at the district that owns the file: hammer, sparks |
+| <img src="web/assets/icons/research.png" height="28"> | **Research** | Read, Grep, Glob | library: book, floating pages |
+| <img src="web/assets/icons/craft.png" height="28"> | **Craft** | shell commands | workshop: flask, smoke |
+| <img src="web/assets/icons/trial.png" height="28"> | **Training** | running tests | arena: damage numbers, a red **Miss** on failure |
+| <img src="web/assets/icons/deliver.png" height="28"> | **Deliver** | `git commit` / `push` | the Kafra booth, carrying a chest |
+| <img src="web/assets/icons/teleport.png" height="28"> | **Teleport** | web search / fetch | warp portal: pillar of light |
+| <img src="web/assets/icons/summon.png" height="28"> | **Summon** | starting a subagent | a magic circle, then a party member appears |
+| <img src="web/assets/icons/cast.png" height="28"> | **Cast** | thinking | in place, with "…" |
+| <img src="web/assets/icons/waiting.png" height="28"> | **Your turn!** | its turn ended | plaza: a "!" above its head |
+| <img src="web/assets/icons/resting.png" height="28"> | **Rest** | 30+ minutes quiet | at the inn |
+
+![An agent selected: its quest, HP, current skill and recent actions](docs/images/agent.jpg)
+
+## 🏰 Town levels
+
+Towns grow with the repo. The tier comes from file count, commit count and age
+(`src/growth.mjs`), and the commit floor stops a huge one-off import from
+skipping tiers.
+
+<div align="center">
+<img src="web/assets/buildings/tent.png" height="64" alt="Camp">&nbsp;&nbsp;→&nbsp;&nbsp;<img src="web/assets/buildings/district-1.png" height="72" alt="Village">&nbsp;&nbsp;→&nbsp;&nbsp;<img src="web/assets/buildings/district-3.png" height="84" alt="Town">&nbsp;&nbsp;→&nbsp;&nbsp;<img src="web/assets/buildings/district-5.png" height="96" alt="City">&nbsp;&nbsp;→&nbsp;&nbsp;<img src="web/assets/buildings/castle.png" height="110" alt="Capital">
+</div>
+
+| Tier | To reach it | Looks like |
 |---|---|---|
-| ★ Camp | a new repo | tents, a campfire, dirt paths |
-| ★★ Village | 25+ files, 10+ commits | small houses, wooden palisade |
-| ★★★ Town | 120+ files, 40+ commits | cobbled streets, low stone wall |
-| ★★★★ City | 500+ files, 150+ commits | stone walls with corner towers |
-| ★★★★★ Capital | 2000+ files, 500+ commits, 6+ months | adds a castle |
+| ★ **Camp** | a new repo | tents, a campfire, dirt paths |
+| ★★ **Village** | 25 files · 10 commits | small houses, a wooden palisade |
+| ★★★ **Town** | 120 files · 40 commits | cobbled streets, a low stone wall |
+| ★★★★ **City** | 500 files · 150 commits | stone walls and corner towers |
+| ★★★★★ **Capital** | 2000 files · 500 commits · 6 months | a castle behind the walls |
 
-The **biome** follows the main language: Swift/Kotlin coast, TypeScript desert,
-Go/Rust/C snow, Python forest, JavaScript/web plains, Ruby/PHP/Java canyon, and
-docs-only meadow. **Mood** follows commits: 30+ in a month is *bustling* (more
-townsfolk), and none for 30 days is *abandoned* (dim, overgrown).
+The Kafra panel shows each town's progress bars toward the next tier.
 
-### Agents walk to their work
+**Biomes** follow the repo's main language, and **moods** follow its commits:
 
-| Tool | Activity | Where and how |
-|---|---|---|
-| Edit, Write, `apply_patch` | building | the district owning the file: hammer, sparks |
-| Read, Grep, Glob | researching | library: book, floating pages |
-| shell | crafting | workshop: flask, smoke |
-| shell running tests | training | arena: damage numbers, a red "Miss" on failure |
-| shell commit / push | delivering | Kafra booth: carries a chest |
-| web search / fetch | teleporting | warp portal: pillar of light |
-| subagent | summoning | in place: magic circle, and a party member appears |
-| (thinking) | casting | in place: "…" |
-| turn ended | waiting | plaza: "!" and "Your turn!" |
-| quiet for 30+ min | resting | inn |
+| Language | Biome | | Commits | Mood |
+|---|---|---|---|---|
+| Swift / Kotlin | 🌊 coast | | 30+ in a month | 🎉 bustling: more townsfolk |
+| TypeScript | 🏜️ desert | | some | 🙂 steady |
+| Go / Rust / C | ❄️ snow | | none for 30 days | 🍂 abandoned: dim, overgrown |
+| Python | 🌲 forest | | | |
+| JavaScript / web | 🌾 plains | | | |
+| Ruby / PHP / Java | 🪨 canyon | | | |
+| docs only | 🌸 meadow | | | |
 
-A finished tool keeps showing until the next one. An edit takes milliseconds,
-so without this an agent would look like it is "thinking" almost all the time.
+| ★ Camp in the forest | ★★ Village in the snow |
+|:-:|:-:|
+| ![A forest camp of tents](docs/images/camp.jpg) | ![A snowy village with pine trees](docs/images/snow.jpg) |
+| **★★★★ City on the coast** | **★★★★★ Capital in the desert** |
+| ![A coastal city ringed by sea](docs/images/coast.jpg) | ![A desert capital with a castle, mid "Level Up!"](docs/images/capital.jpg) |
 
-## Staying aware
+## 💫 Status effects
 
-- **Status rings.** Agents have a ring at their feet: green when working,
-  **yellow when waiting for you**, red after an error, grey when idle.
-  Townsfolk are smaller and muted, with no ring.
-- **Party bar.** Along the bottom, every awake agent with what it is running
-  and for how long, most urgent first. Click a card to jump to that agent.
-- **Alerts.** Kafra raises an alert when an agent waits for you, a tool fails,
-  a tool runs over 2 minutes, or HP drops below 15%. Each alert goes to the
-  chat log, optionally to a browser notification and a chime, and into the tab
-  title as a count.
-- **World map.** Zoomed out, each town is a pin coloured by its most urgent
-  agent.
-- **Menu bar (macOS).** `./kafra.sh menubar` installs a
-  [SwiftBar](https://swiftbar.app) plugin (`brew install --cask swiftbar`
-  first).
-  - `⚔ 2` in yellow means two agents are waiting for you. The dropdown lists
-    every awake agent, and clicking one opens Kafra on it.
-  - A native notification appears once per agent that starts waiting. It comes
-    from **Kafra Notifier** (`integrations/notifier/`), a small Swift helper
-    compiled on your machine, which only ever opens links to `127.0.0.1`.
-- **Autostart (macOS).** `./kafra.sh autostart on` installs a per-user
-  LaunchAgent, so the server starts at every login and restarts if it crashes.
-  It also adds SwiftBar to Login Items. Logs are in `~/Library/Logs/Kafra/`.
-  "Login" means logging in to your Mac; no account is involved.
-- **Sound and music** (off until you click 🔈 / 🎵 on the party bar). All of
-  it is synthesised in the browser, with no audio files.
-  - Each activity has its own sound, panned by where the agent is on screen.
-  - The background music is a small generative chiptune that changes with the
-    biome you're looking at and slows down at night.
-- **Time and weather.** Day and night follow your clock, and a town rains
-  while a tool there is failing. To preview them: `?hour=21`, `?weather=rain`.
+| Ring | Meaning |
+|---|---|
+| 🟢 green | working |
+| 🟡 **yellow, pulsing** | **waiting for you** |
+| 🔴 red, pulsing | its last tool failed |
+| ⚪ grey | idle |
 
-## Replay and the daily newspaper
+Townsfolk are smaller and muted, and have no ring or HP bar, so you can always
+tell the agents from the scenery. Zoomed out, every town turns into a pin
+coloured by its most urgent agent.
 
-**Replay** (⏪ in the World Map, or `R`) plays back any day:
+| Condition | What happens |
+|---|---|
+| Waiting for you | alert, plus a count in the tab title and the menu bar |
+| A tool failed | the town rains, and "Miss" pops up |
+| A tool runs over 2 minutes | alert |
+| HP below 15% | alert: the context is almost full |
+| Night (by your clock) | lamps glow, and the music slows down |
 
-1. Today opens first; pick another date in the bar.
-2. Press ▶ (or `Space`) and choose a speed from ×10 to ×1200. Agents walk,
-   build, fail and commit as they did, and the chat log narrates with the
-   replay's clock.
-3. Drag the slider to jump. Gold ticks mark commits, red ticks failures.
-4. `● Live` (or `Esc`) returns to now.
+![A town at night in the rain](docs/images/night.jpg)
 
-**Koran Kafra** (📰) is the day on one page: a headline, who worked where,
-files built, failures and fixes, commits, the best builder and the longest
-shift. Click any line to jump the replay to that moment.
+## 🎒 Items and equipment
 
-Kafra records nothing of its own. A replay is rebuilt from your agents' session
-files and git history, reading each file backwards only as far as the chosen
-day (today takes about half a second). A day can be replayed as long as its
-session files still exist. Alerts and notifications stay silent while
-replaying.
+| Item | What it does |
+|---|---|
+| 🧾 **Party bar** | every awake agent, with what it's running and for how long, most urgent first |
+| 💬 **Chat log** | every action, failure and commit as it happens; click a line to jump there |
+| ⚔️ **Menu bar** (`./kafra.sh menubar`) | `⚔ 2` in yellow means two agents are waiting; the dropdown jumps to any agent |
+| 🔔 **Kafra Notifier** | a native macOS notification when an agent starts waiting; click it to open that agent. It's a tiny Swift helper built on your machine, and it only opens `127.0.0.1` links |
+| 🌅 **Autostart** (`./kafra.sh autostart on`) | a per-user LaunchAgent: Kafra and SwiftBar start whenever you log in to your Mac. Logs are in `~/Library/Logs/Kafra/` |
+| 🔊 **Sound and music** (🔈 / 🎵) | a sound for each skill, panned to where the agent stands, and a generative chiptune that changes with the biome. Synthesised in the browser and off by default |
+| ⏪ **Replay** (`R`) | replay any day; see below |
+| 📰 **Koran Kafra** | the day's newspaper; see below |
 
-## Privacy
+## ⏪ Replay and 📰 the daily newspaper
 
-Copy `kafra.config.example.json` to `kafra.config.json` (gitignored). Changes
-apply on the next update, with no restart.
+**Replay** plays back any day at ×10 to ×1200. Agents walk, build, fail and
+commit exactly as they did, and the chat log narrates using the replay's clock.
+On the slider, gold ticks mark commits and red ticks mark failures.
+`● Live` brings you back to now.
+
+**Koran Kafra** is the day on one page: a headline, who worked where, files
+built, failures and fixes, commits, the best builder and the longest shift.
+Click any line to jump the replay to that moment.
+
+![Replay bar and the Koran Kafra daily newspaper](docs/images/replay.jpg)
+
+Kafra keeps no recordings of its own. A replay is rebuilt from your agents'
+session files and git history, reading backwards only as far as the chosen day
+(today takes about half a second). Alerts stay silent while you replay.
+
+## 🔐 Kafra storage rules (privacy and safety)
+
+**What Kafra reads.** Only the session files below, plus git metadata. It
+never reads your files' contents, only their paths and counts.
+
+| Agent | Sessions |
+|---|---|
+| Claude Code | `~/.claude/projects/` |
+| Codex | `~/.codex/sessions/` |
+| Gemini CLI | `~/.gemini/tmp/` (its folders are hashes of the working directory; Kafra finds the folder or skips the session, and never guesses) |
+
+`KAFRA_SOURCES=claude-code,codex` limits which sources are read, and
+`KAFRA_MAX_AGE_DAYS` (default 7) sets how far back.
+
+**Hide what you don't want shown.** Copy `kafra.config.example.json` to
+`kafra.config.json` (it's gitignored). Changes apply without a restart.
 
 ```json
 {
@@ -188,119 +234,118 @@ apply on the next update, with no restart.
 }
 ```
 
-- **`hide`:** repos or working directories that never appear. Git never runs
-  on them.
-- **`only`:** when not empty, only these appear.
-- **`redact`:** extra words (case-insensitive) or `/regex/` patterns, masked as
-  `••••` in prompts, titles, repo and branch names and commit subjects. This is
-  on top of the built-in credential patterns.
-- **Patterns:** `*` matches within one folder, `**` across folders, and `~` is
-  your home folder. A name without a slash matches that folder anywhere.
+- **`hide`**: these repos never appear, and git never runs on them.
+- **`only`**: when set, only these repos appear.
+- **`redact`**: words (case-insensitive) or `/regex/` patterns become `••••`
+  everywhere: prompts, titles, repo and branch names, and commit subjects.
+  This is on top of the built-in patterns (`sk-…`, `ghp_…`, `AKIA…`,
+  `token=…`, JWTs).
+- **Patterns**: `*` matches within one folder, `**` across folders, `~` is
+  your home folder, and a bare name matches that folder anywhere.
 
-**Public mode** (`./kafra.sh public`, or `"public": true`) keeps the game and
-drops every piece of text: prompts, titles, paths, repo and branch names,
-commit subjects and hashes. Kingdoms and districts are numbered instead of
-named. It applies to the live world, the menu bar and replays, and happens on
-the server, so the text never reaches the browser. Use it for screen sharing
-and streaming.
+**Public mode** (`./kafra.sh public`) keeps the game and removes every word.
+That covers the live city, the menu bar and replays. The stripping happens on
+the server, so the text never reaches the browser.
 
-Kafra has no login on purpose. Don't expose it to the internet. To view it from
-another device, use Tailscale or an SSH tunnel.
+**How Kafra is locked down**
 
-## Safety
+| Guard | Detail |
+|---|---|
+| 🏠 Local only | listens on `127.0.0.1`; other machines can't reach it |
+| 🌐 No other websites | wrong `Host` (DNS rebinding), cross-site `Origin`/`Sec-Fetch-Site` and anything but `GET`/`HEAD` are refused |
+| 🧱 Strict CSP | scripts only from Kafra itself, no `eval`; the page can't be framed and sends no referrer |
+| 📦 Zero dependencies | no npm packages at all; PixiJS (MIT) is vendored in `web/vendor/` |
+| 🔒 Git, safely | `execFile` with fixed arguments and no shell; never takes `index.lock` while an agent commits; repo config can't launch programs (`core.fsmonitor`, `--no-ext-diff`, `--no-textconv`) |
+| 👀 Read-only | no hooks, no writes to your agents' folders or your repos, no outbound calls |
 
-Kafra only reads. It installs no hooks, never writes to your agents' folders or
-your repos, and makes no outbound network calls.
+Kafra has no login on purpose, so don't expose it to the internet. To view it
+from another device, use Tailscale or an SSH tunnel.
 
-- **Network.** The server binds to `127.0.0.1` only, so other machines can't
-  reach it.
-- **Other websites can't reach it either.** Every request needs a `Host` of
-  `127.0.0.1`/`localhost` on Kafra's port, which blocks DNS rebinding.
-  Cross-site requests (`Origin`, `Sec-Fetch-Site`) are refused, and only
-  `GET`/`HEAD` are accepted.
-- **Browser.** A strict Content Security Policy allows scripts only from Kafra
-  itself, with no `eval` (PixiJS's no-eval patch is loaded for this). The page
-  can't be framed and sends no referrer. Static files resolve strictly inside
-  `web/`.
-- **No dependencies.** There are no npm packages. PixiJS (MIT) is vendored in
-  `web/vendor/` by `scripts/vendor-pixi.mjs`, so nothing is downloaded or
-  installed to run Kafra.
-- **Git.** Git runs through `execFile` (no shell) with fixed arguments.
-  `GIT_OPTIONAL_LOCKS=0` keeps `git status` from taking `index.lock` while an
-  agent commits. `core.fsmonitor=false`, `--no-ext-diff` and `--no-textconv`
-  stop repo config from launching programs.
-- **Contents.** File contents are never read, only paths and counts.
-- **Redaction.** Displayed text is scrubbed of credential-shaped strings
-  (`sk-…`, `ghp_…`, `rdpk-…`, `AKIA…`, `token=…`, JWTs).
-
-## Resource use
+## 📊 Character stats (resource use)
 
 Measured on a MacBook with about 450 sessions on disk:
 
-| | Typical |
+| Stat | Value |
 |---|---|
-| Repo on disk | ~7 MB (code, art, vendored PixiJS) |
-| Kafra's own data | none: it stores nothing, so it doesn't grow |
-| Server RAM | ~75 MB live; ~130 MB with replays open (heap capped at 128 MB under autostart) |
-| Server CPU | ~0–1%, brief spikes while scanning |
-| SwiftBar | ~80 MB RAM, ~0% CPU |
-| Browser tab | the heaviest part (60 fps animation), only while open; background tabs are throttled |
+| Disk | ~7 MB in total, and Kafra stores nothing, so it doesn't grow |
+| Server RAM | ~75 MB live; ~130 MB with replays open (capped under autostart) |
+| Server CPU | ~0–1%, with short spikes while scanning |
+| Menu bar (SwiftBar) | ~80 MB RAM, ~0% CPU |
+| Browser tab | the heaviest part, because it animates at 60 fps, but only while it's open |
 
-**What runs, and when:**
-- **The server** idles until asked.
-- **The menu bar plugin** asks every 10 seconds. Each time, Kafra reads the
-  last 256 KB of each session from the past week, plus git stats cached for
-  10 seconds.
-- **An open browser tab** gets an update every 2 seconds.
-- **Replays** are read on demand. Up to 3 days stay cached for 10 minutes, and
-  re-reading one takes under a second.
+**What runs, and when**
 
-## Architecture
+- **The server** idles until something asks it.
+- **The menu bar** asks every 10 seconds. Kafra then reads the last 256 KB of
+  each session from the past week, plus git stats cached for 10 seconds.
+- **An open tab** gets an update every 2 seconds.
+- **Replays** load on demand. Up to 3 days stay cached for 10 minutes.
+
+## 🏆 Achievements
+
+| | Achievement |
+|:-:|---|
+| ✅ | **Town Founder**: one repo, one town, and agents walk to their work |
+| ✅ | **Master Builder**: generated pixel art for every class, building and skill |
+| ✅ | **Kingdom Builder**: tiers, biomes, moods and a world map |
+| ✅ | **Polyglot**: reads Claude Code, Codex and Gemini CLI |
+| ✅ | **Time Mage**: replay any day, and the daily newspaper |
+| ✅ | **Watchtower**: menu bar, native notifications, autostart |
+| ✅ | **Bard's Song**: synthesised sound and music |
+| ✅ | **Iron Wall**: DNS-rebinding guard, strict CSP, zero dependencies, public mode |
+| 🔒 | **Native Hero**: a SwiftUI menu bar app with no SwiftBar needed |
+| 🔒 | **Monster Hunter**: failing tests become monsters in the arena until they pass |
+| 🔒 | **Hall of Fame**: achievements and levels for your own agents |
+| 🔒 | **Guild Recruiter**: Aider, Cursor and OpenCode |
+| 🔒 | **Commander**: approve tool calls from the city (opt-in, needs hooks) |
+
+The full list is in [ROADMAP.md](ROADMAP.md).
+
+## 🧭 For game masters
 
 ```
 src/sources/          one parser per agent (claude-code, codex, gemini), merged by index.mjs
-src/activity.mjs      tool → activity kind; redaction
+src/activity.mjs      tool → skill; redaction
 src/repos.mjs         read-only git → districts, commits, growth numbers
-src/growth.mjs        tier, mood and biome from repo numbers
-src/world.mjs         sessions → towns (live and replay)
+src/growth.mjs        tier, mood and biome
+src/world.mjs         sessions → towns, live and replayed
 src/privacy.mjs       hide / only / redact, public mode
-src/menubar.mjs       SwiftBar text
 src/guard.mjs         host, origin and header rules
+src/menubar.mjs       the SwiftBar view
 src/server.mjs        /api/world/stream (SSE), /api/replay, /api/swiftbar, static files
-web/city/             PixiJS client: world, town, agent, land, replay, newspaper, audio, ui, …
+web/city/             the PixiJS city: world, town, agent, land, replay, newspaper, audio, ui, …
 web/vendor/           PixiJS, vendored
-web/assets/           generated art and its manifest (see web/assets/README.md)
+web/assets/           the generated art and its manifest
 integrations/         SwiftBar plugin, Kafra Notifier
 scripts/              demo, simulation, fixtures, asset generation, vendoring
 ```
 
-The renderer only knows activity *kinds*, never tool names. Supporting another
-agent means one file in `src/sources/` that returns the shared session shape
-(see `codex.mjs`) plus a `replaySessions` for its history, and one line in
-`src/sources/index.mjs`.
-
-## Development
-
 ```bash
-npm start                     # http://127.0.0.1:4317 (no install step)
-npm run demo                  # fixture transcripts, every animation   → :4318
-npm run simulate              # six living towns in a temp folder     → :4319
-npm test                      # node:test, no dependencies
-node scripts/gen-assets.mjs   # Retro Diffusion art (see web/assets/README.md)
+npm start            # http://127.0.0.1:4317, no install step
+npm run demo         # fixture transcripts, every animation   → :4318
+npm run simulate     # six living towns in a temp folder     → :4319
+npm test             # node:test, no dependencies
 ```
 
-To upgrade PixiJS, see the header of `scripts/vendor-pixi.mjs`.
+**Recruiting a new agent.** Add one file in `src/sources/` that returns the
+shared session shape (see `codex.mjs`) plus a `replaySessions` for its
+history, then add one line to `src/sources/index.mjs`. The city only knows
+skills, never tool names, so nothing else needs to change.
 
-See [ROADMAP.md](ROADMAP.md) for what's done and what's next.
+**More art.** See [web/assets/README.md](web/assets/README.md) to regenerate
+or replace it. To upgrade PixiJS, see `scripts/vendor-pixi.mjs`.
 
-## About the art
+## 🎨 About the art
 
-The look is **inspired by** Ragnarok Online, not copied from it. All original
-RO sprites, tilesets, fonts and music are copyright Gravity Co., Ltd., and none
-are in this repo. The art here is original pixel art generated with Retro
-Diffusion, from prompts that never name the game or its characters, with shapes
-drawn in code as fallbacks. The music is generated in the browser. Town names
-are borrowed as names only.
+Kafra is **inspired by** Ragnarok Online, not copied from it. Every original
+RO sprite, tileset, font and piece of music is copyright Gravity Co., Ltd., and
+none of them are in this repo. The art here is original pixel art generated
+with Retro Diffusion from prompts that never name the game or its characters,
+with code-drawn fallbacks. The music is generated live in your browser. Town
+names are borrowed as names only.
 
-How to replace or regenerate the art is in
-[web/assets/README.md](web/assets/README.md).
+<div align="center">
+
+*"Thank you for using Kafra Service. Safe travels, adventurer."* ⚔️
+
+</div>

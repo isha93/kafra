@@ -42,6 +42,7 @@ const MAX_DISTRICTS = 8;
 
 const rootCache = new Map();   // cwd → Promise<root | null>
 const statsCache = new Map();  // root → { at, promise }
+const lastGood = new Map();    // root → last growth numbers read without a git error
 
 /** The repo a working directory belongs to, or null outside git. Cached forever: repos don't move. */
 export function repoRootOf(cwd) {
@@ -78,21 +79,31 @@ async function computeStats(root) {
     git(root, ['ls-files']).catch(() => ''),
     git(root, ['log', '--since=7.days.ago', '--no-merges', '--no-ext-diff', '--no-textconv', '--numstat', '--pretty=format:%x00%h%x09%at%x09%an%x09%s']).catch(() => ''),
     git(root, ['status', '--porcelain=v1']).catch(() => ''),
-    git(root, ['rev-list', '--count', 'HEAD']).catch(() => '0'),
-    git(root, ['rev-list', '--count', '--since=30.days.ago', 'HEAD']).catch(() => '0'),
+    // null on failure, not 0: see `steady` below.
+    git(root, ['rev-list', '--count', 'HEAD']).catch(() => null),
+    git(root, ['rev-list', '--count', '--since=30.days.ago', 'HEAD']).catch(() => null),
     // Root commits; a repo can have several, the oldest is the town's founding.
-    git(root, ['log', '--max-parents=0', '--format=%at', 'HEAD']).catch(() => ''),
-    git(root, ['log', '-1', '--format=%at', 'HEAD']).catch(() => ''),
+    git(root, ['log', '--max-parents=0', '--format=%at', 'HEAD']).catch(() => null),
+    git(root, ['log', '-1', '--format=%at', 'HEAD']).catch(() => null),
   ]);
   const paths = files.split('\n').filter(Boolean);
+  // A git call can fail for a moment while an agent is committing (refs being
+  // rewritten). Falling back to zero would demote a capital to a camp for ten
+  // seconds; the last good reading is the honest answer.
+  const prev = lastGood.get(root);
+  const steady = (raw, parse, key) => (raw === null ? prev?.[key] ?? null : parse(raw));
+  const firstOf = (raw) => {
+    const t = Math.min(...raw.split('\n').filter(Boolean).map((x) => Number(x) * 1000));
+    return Number.isFinite(t) ? t : null;
+  };
   const growth = {
     files: paths.length,
-    commitsTotal: Number(total.trim()) || 0,
-    commits30: Number(recent.trim()) || 0,
-    firstCommitAt: Math.min(...roots.split('\n').filter(Boolean).map((s) => Number(s) * 1000)) || null,
-    lastCommitAt: Number(last.trim()) * 1000 || null,
+    commitsTotal: steady(total, (x) => Number(x.trim()) || 0, 'commitsTotal') ?? 0,
+    commits30: steady(recent, (x) => Number(x.trim()) || 0, 'commits30') ?? 0,
+    firstCommitAt: steady(roots, firstOf, 'firstCommitAt'),
+    lastCommitAt: steady(last, (x) => Number(x.trim()) * 1000 || null, 'lastCommitAt'),
   };
-  if (!Number.isFinite(growth.firstCommitAt)) growth.firstCommitAt = null;
+  if ([total, recent, roots, last].every((x) => x !== null)) lastGood.set(root, growth);
 
   const districts = new Map();
   const district = (name) => {
