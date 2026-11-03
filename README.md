@@ -15,6 +15,7 @@ working directory.
 ./kafra.sh simulate   # six fake towns that keep working                    → :4319
 ./kafra.sh public     # your world with all text removed, safe to share     → :4317
 ./kafra.sh menubar    # macOS menu bar icon (via SwiftBar)
+./kafra.sh autostart on|off|status   # start Kafra by itself at every macOS login
 ./kafra.sh help
 ```
 
@@ -149,6 +150,19 @@ so without this an agent would look like it is "casting" almost all the time.
     even with the browser closed.
   - The plugin is a few lines of `curl` to `127.0.0.1`. The formatting lives in
     `src/menubar.mjs` and follows the same privacy rules as the city.
+  - Notifications are posted by **Kafra Notifier**
+    (`integrations/notifier/`), a small Swift helper compiled on your machine
+    by `./kafra.sh menubar`. Clicking a notification opens Kafra on the waiting
+    agent, and the helper only ever opens links to `127.0.0.1` or
+    `localhost`. Notifications from `osascript` would belong to Script
+    Editor, which is why the helper exists.
+- **Autostart (macOS).** `./kafra.sh autostart on` installs a per-user
+  LaunchAgent (`~/Library/LaunchAgents/dev.kafra.server.plist`), so the server
+  starts at every login and restarts if it crashes. Logs go to
+  `~/Library/Logs/Kafra/`. It also adds SwiftBar to Login Items.
+  `autostart off` removes the LaunchAgent, and `autostart status` shows
+  whether the server is running. No account is involved: "login" means
+  logging in to your Mac, and the server still listens only on `127.0.0.1`.
 - **Sound and music** (both off until you click 🔈 / 🎵 on the party bar). All
   of it is synthesised in the browser, with no audio files and nothing
   fetched:

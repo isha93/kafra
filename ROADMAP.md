@@ -31,7 +31,7 @@ would change that is opt-in and listed last.
 
 - [x] macOS menu bar icon via SwiftBar: count of agents waiting for you, native notifications
 - [ ] Native SwiftUI menu bar app (no SwiftBar needed)
-- [ ] Start on login
+- [x] Start on login (`./kafra.sh autostart on`, a per-user LaunchAgent)
 - [ ] Install with `npx` or Homebrew
 
 ## 3. Deeper monitoring

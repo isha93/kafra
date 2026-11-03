@@ -7,6 +7,7 @@
 #   ./kafra.sh simulate   enam kota palsu yang hidup terus
 #   ./kafra.sh public     kotamu tanpa teks apa pun, aman untuk dipamerkan
 #   ./kafra.sh menubar    pasang ikon menu bar (SwiftBar)
+#   ./kafra.sh autostart on|off|status   jalan sendiri tiap login ke Mac
 #   ./kafra.sh setup      cuma siapkan (cek Node, npm install)
 #   ./kafra.sh test       jalankan test
 #   ./kafra.sh help       bantuan
@@ -51,6 +52,7 @@ usage() {
     ${GOLD}simulate${OFF}   enam kota palsu yang hidup terus              → http://127.0.0.1:4319
     ${GOLD}public${OFF}     kotamu tanpa teks: aman untuk layar bersama   → http://127.0.0.1:4317
     ${GOLD}menubar${OFF}    pasang ikon menu bar macOS (lewat SwiftBar)
+    ${GOLD}autostart${OFF}  on | off | status — Kafra jalan sendiri tiap login ke Mac
     ${GOLD}setup${OFF}      cuma cek Node dan npm install
     ${GOLD}test${OFF}       jalankan test
     ${GOLD}help${OFF}       pesan ini
@@ -192,6 +194,97 @@ install_menubar() {
   printf '%s\n' "  ${DIM}Notifikasi macOS muncul saat ada agent yang mulai menunggu. Kafra harus jalan (./kafra.sh).${OFF}"
 }
 
+# ── Autostart (launchd) ──────────────────────────────────────────────────────
+
+LABEL="dev.kafra.server"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
+LOGDIR="$HOME/Library/Logs/Kafra"
+DOMAIN="gui/$(id -u)"
+
+xml_escape() { local s=${1//&/&amp;}; s=${s//</&lt;}; s=${s//>/&gt;}; printf '%s' "$s"; }
+
+autostart_on() {
+  [[ "$(uname)" == Darwin ]] || fail "Autostart memakai launchd, hanya untuk macOS."
+  setup
+  local node port
+  node=$(command -v node)
+  port=${KAFRA_PORT:-4317}
+  mkdir -p "$HOME/Library/LaunchAgents" "$LOGDIR"
+
+  # Whatever already serves Kafra on this port (a ./kafra.sh in a terminal) makes
+  # way, or launchd's copy would fail to bind and keep retrying.
+  launchctl bootout "$DOMAIN/$LABEL" >/dev/null 2>&1 || true
+  if already_running "$port"; then
+    lsof -ti "tcp:$port" -sTCP:LISTEN | xargs kill 2>/dev/null || true
+    sleep 1
+  fi
+
+  cat > "$PLIST" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>$LABEL</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>$(xml_escape "$node")</string>
+    <string>$(xml_escape "$PWD/src/server.mjs")</string>
+  </array>
+  <key>WorkingDirectory</key><string>$(xml_escape "$PWD")</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>KAFRA_PORT</key><string>$port</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <!-- Restart after a crash, but not in a tight loop if the port is taken. -->
+  <key>KeepAlive</key><true/>
+  <key>ThrottleInterval</key><integer>30</integer>
+  <key>ProcessType</key><string>Background</string>
+  <key>StandardOutPath</key><string>$(xml_escape "$LOGDIR/server.log")</string>
+  <key>StandardErrorPath</key><string>$(xml_escape "$LOGDIR/server.log")</string>
+</dict>
+</plist>
+PLIST
+  plutil -lint "$PLIST" >/dev/null || fail "File launchd tidak valid: $PLIST"
+  launchctl bootstrap "$DOMAIN" "$PLIST" || fail "launchctl menolak $PLIST"
+  ok "Kafra akan jalan sendiri tiap login (launchd: $LABEL)"
+
+  # The menu bar icon needs SwiftBar running too.
+  if [[ -d /Applications/SwiftBar.app ]]; then
+    if ! osascript -e 'tell application "System Events" to get the name of every login item' 2>/dev/null | grep -q SwiftBar; then
+      osascript -e 'tell application "System Events" to make login item at end with properties {path:"/Applications/SwiftBar.app", hidden:true}' >/dev/null 2>&1 \
+        && ok "SwiftBar ditambahkan ke Login Items" \
+        || printf '%s\n' "  ${GOLD}!${OFF} Tambahkan SwiftBar ke Login Items sendiri (System Settings → General → Login Items)."
+    else
+      ok "SwiftBar sudah ada di Login Items"
+    fi
+  fi
+
+  for _ in $(seq 1 20); do already_running "$port" && break; sleep 0.5; done
+  if already_running "$port"; then
+    ok "Server hidup di http://127.0.0.1:$port"
+  else
+    fail "Server belum hidup. Cek log: $LOGDIR/server.log"
+  fi
+  printf '%s\n' "  ${DIM}Node: $node — kalau versi Node diganti (nvm), jalankan ./kafra.sh autostart on lagi.${OFF}"
+}
+
+autostart_off() {
+  launchctl bootout "$DOMAIN/$LABEL" >/dev/null 2>&1 || true
+  rm -f "$PLIST"
+  ok "Autostart dimatikan dan server dihentikan. (SwiftBar dibiarkan di Login Items.)"
+}
+
+autostart_status() {
+  local port=${KAFRA_PORT:-4317}
+  if [[ -f "$PLIST" ]]; then ok "Autostart aktif: $PLIST"; else printf '%s\n' "  · Autostart mati"; fi
+  local pid
+  pid=$(launchctl print "$DOMAIN/$LABEL" 2>/dev/null | awk '/^\tpid =/ {print $3}')
+  [[ -n "$pid" ]] && ok "Dijalankan launchd (pid $pid)"
+  if already_running "$port"; then ok "Server menjawab di http://127.0.0.1:$port"; else printf '%s\n' "  ${RED}✗${OFF} Server tidak menjawab di port $port"; fi
+  printf '%s\n' "  ${DIM}Log: $LOGDIR/server.log${OFF}"
+}
+
 cmd=${1:-start}
 case "$cmd" in
   start|"")
@@ -200,6 +293,13 @@ case "$cmd" in
   menubar)
     banner
     install_menubar ;;
+  autostart)
+    case "${2:-status}" in
+      on) banner; autostart_on ;;
+      off) autostart_off ;;
+      status) autostart_status ;;
+      *) fail "Pakai: ./kafra.sh autostart on|off|status" ;;
+    esac ;;
   public)
     banner; setup
     kafra "Mode publik: nama repo, path, prompt, dan judul commit disembunyikan di server."
