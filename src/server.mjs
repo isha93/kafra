@@ -2,8 +2,11 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { listSessions, PROJECTS_DIR } from './sources/claude-code.mjs';
-import { buildWorld } from './world.mjs';
+import { PROJECTS_DIR } from './sources/claude-code.mjs';
+import { listSessions } from './sources/index.mjs';
+import { CODEX_DIR } from './sources/codex.mjs';
+import { GEMINI_DIR } from './sources/gemini.mjs';
+import { buildWorld, buildReplay } from './world.mjs';
 import { allowedHost, allowedOrigin, SECURITY_HEADERS } from './guard.mjs';
 import { loadConfig, visible, publicSessions, CONFIG_PATH } from './privacy.mjs';
 import { swiftbarText } from './menubar.mjs';
@@ -29,31 +32,8 @@ const HOST = '127.0.0.1';
 
 const WEB = resolve(fileURLToPath(new URL('../web/', import.meta.url)));
 
-const pixiFile = (rel) => fileURLToPath(new URL(`../node_modules/pixi.js/dist/${rel}`, import.meta.url));
-
-/**
- * Third-party code the page may load, by explicit path only — node_modules is
- * never browsable.
- *
- * PixiJS compiles shader helpers with `new Function` unless its unsafe-eval
- * package (misleadingly named: it *removes* the need for eval) is installed.
- * That package only exists as a classic script that patches the global PIXI,
- * so the page loads both as classic scripts and the city's modules import
- * from a generated shim. The CSP can then refuse eval outright.
- */
-const VENDOR = {
-  '/vendor/pixi.js': pixiFile('pixi.min.js'),
-  '/vendor/pixi-csp.js': pixiFile('packages/unsafe-eval.min.js'),
-};
-
-/** `export const { Application, … } = globalThis.PIXI`, with every name the ESM build exports. */
-async function pixiShim() {
-  const esm = await readFile(pixiFile('pixi.min.mjs'), 'utf8');
-  const block = esm.match(/export\s*\{([^}]*)\}\s*;?\s*(\/\/.*)?\s*$/)?.[1] ?? '';
-  const names = block.split(',').map((s) => s.trim().split(/\s+as\s+/).pop()).filter((n) => /^[A-Za-z_$][\w$]*$/.test(n));
-  return `const P = globalThis.PIXI;\nif (!P) throw new Error('PixiJS did not load');\nexport const { ${names.join(', ')} } = P;\n`;
-}
-let shim = null;
+// PixiJS lives in web/vendor/ (see scripts/vendor-pixi.mjs) and is served
+// like any other static file: no node_modules at runtime.
 const POLL_MS = 2000;
 
 const TYPES = {
@@ -128,23 +108,21 @@ createServer(async (req, res) => {
     return send(res, 200, 'application/json', JSON.stringify(await buildWorld()));
   }
   if (path === '/api/world/stream') return stream(res, buildWorld);
+  if (path === '/api/replay') {
+    const q = new URL(req.url, 'http://x').searchParams;
+    try {
+      const body = await buildReplay({ from: Number(q.get('from')), to: Number(q.get('to')) });
+      return send(res, 200, 'application/json', JSON.stringify(body));
+    } catch (err) {
+      return send(res, 400, 'text/plain; charset=utf-8', String(err.message ?? err));
+    }
+  }
   // Plain text for the SwiftBar plugin (integrations/swiftbar); same privacy rules as the city.
   if (path === '/api/swiftbar') return send(res, 200, 'text/plain; charset=utf-8', swiftbarText(await buildWorld(), { port: PORT }));
-  if (path === '/vendor/pixi.mjs') {
-    shim ??= pixiShim().catch(() => null);
-    const body = await shim;
-    return body ? send(res, 200, TYPES['.mjs'], body) : send(res, 404, 'text/plain', 'jalankan npm install dulu');
-  }
-  if (VENDOR[path]) {
-    return readFile(VENDOR[path]).then(
-      (body) => send(res, 200, TYPES['.js'], body),
-      () => send(res, 404, 'text/plain', 'jalankan npm install dulu'),
-    );
-  }
   return serveStatic(path, res);
 }).listen(PORT, HOST, () => {
   console.log(`⚔  Kafra siap di http://${HOST}:${PORT}`);
-  console.log(`   membaca ${PROJECTS_DIR} (read-only)`);
+  console.log(`   membaca (read-only): ${PROJECTS_DIR}, ${CODEX_DIR}, ${GEMINI_DIR}`);
   const config = loadConfig();
   if (config.error) console.log(`   ⚠ ${config.error}`);
   if (config.hide.length || config.only.length || config.redact.length) console.log(`   privasi: ${CONFIG_PATH}`);

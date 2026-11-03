@@ -23,6 +23,14 @@ export const KINDS = {
 const TEST_RE = /\b(test|tests|jest|vitest|pytest|xcodebuild\b.*\btest|go test|cargo test|swift test|playwright)\b/;
 const DELIVER_RE = /\bgit\s+(commit|push|tag)\b|\bgh\s+pr\s+create\b/;
 
+/** A shell command → activity kind; shared by every agent source. */
+export function kindOfCommand(command) {
+  const cmd = Array.isArray(command) ? command.join(' ') : String(command ?? '');
+  if (DELIVER_RE.test(cmd)) return 'deliver';
+  if (TEST_RE.test(cmd)) return 'trial';
+  return 'craft';
+}
+
 /** Claude Code tool call → activity kind. */
 export function kindOfClaudeTool(name = '', input = {}) {
   switch (name) {
@@ -44,12 +52,8 @@ export function kindOfClaudeTool(name = '', input = {}) {
       return 'summon';
     case 'AskUserQuestion':
       return 'ask';
-    case 'Bash': {
-      const cmd = String(input.command ?? '');
-      if (DELIVER_RE.test(cmd)) return 'deliver';
-      if (TEST_RE.test(cmd)) return 'trial';
-      return 'craft';
-    }
+    case 'Bash':
+      return kindOfCommand(input.command);
     default:
       return 'craft';
   }
@@ -67,7 +71,7 @@ export function targetOfClaudeTool(name = '', input = {}) {
   return { label: name };
 }
 
-function oneLine(v) {
+export function oneLine(v) {
   return redact(String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, 80));
 }
 

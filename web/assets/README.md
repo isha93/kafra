@@ -73,7 +73,8 @@ top of the art.
 ## Generating art (Retro Diffusion)
 
 Everything in this folder was made with `scripts/gen-assets.mjs`, which also
-holds the prompts. It needs `RETRO_DIFFUSION_API_KEY` in `.env`, which is
+holds the prompts. The `wizard` sheet (Codex) was made the same way; Gemini's
+`sage` reuses the bard's sheet tinted blue (see `ALIAS` in `web/city/skin.js`). It needs `RETRO_DIFFUSION_API_KEY` in `.env`, which is
 gitignored.
 
 ```bash

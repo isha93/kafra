@@ -206,3 +206,57 @@ body.city {
 }
 
 .mode { font-weight: 700; color: #2a4f8a; }
+
+.member .m-src { font-weight: 400; font-size: 9px; color: var(--ink-soft); border: 1px solid var(--bevel-dark); padding: 0 3px; border-radius: 2px; }
+
+/* Replay bar: centred between the two side panels. */
+.replaybar { top: 12px; left: 274px; right: 364px; }
+.replaybar[hidden], .news[hidden] { display: none; }
+.rb-row { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: var(--parchment-dim); }
+.rb-btn {
+  all: unset; cursor: pointer; padding: 2px 8px; font-size: 13px;
+  background: var(--parchment); border: 1px solid var(--bevel-dark);
+}
+.rb-btn:hover { background: #fff8e6; }
+.rb-btn.live { color: #b0302a; font-weight: 700; font-size: 11px; }
+.rb-speed, .rb-day { font: 11px Verdana, sans-serif; background: var(--parchment); border: 1px solid var(--bevel-dark); }
+.rb-track { position: relative; flex: 1; min-width: 120px; }
+.rb-track input { width: 100%; display: block; }
+.rb-marks { position: absolute; inset: -4px 0 auto 0; height: 6px; pointer-events: none; }
+.rb-marks .mk { position: absolute; top: 0; width: 2px; height: 6px; transform: translateX(-1px); }
+.rb-marks .mk.commit { background: #d4a017; }
+.rb-marks .mk.error { background: #c0392b; }
+#rb-time { font: 700 12px ui-monospace, Menlo, monospace; }
+body.replaying .stage::after {
+  content: 'REPLAY'; position: fixed; left: 50%; bottom: 200px; transform: translateX(-50%);
+  font: 700 12px Verdana, sans-serif; letter-spacing: .3em; color: rgba(255, 255, 255, .55);
+  pointer-events: none;
+}
+
+/* Koran Kafra: a parchment broadsheet over the map. */
+.news {
+  position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+  width: min(640px, calc(100vw - 32px)); max-height: calc(100vh - 290px); overflow-y: auto;
+  padding: 16px 22px; font: 13px/1.5 Georgia, 'Times New Roman', serif; color: var(--ink);
+  background: #f4ead2; z-index: 10;
+}
+.news .np-head { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 3px double var(--ink); }
+.news h1 { margin: 0; font-size: 26px; letter-spacing: .02em; }
+.news .np-close { all: unset; cursor: pointer; font-size: 16px; padding: 0 4px; }
+.news .np-date { font-style: italic; color: var(--ink-soft); margin: 4px 0 10px; }
+.news .np-headline { font-size: 20px; font-weight: 700; line-height: 1.25; }
+.news .np-lead { margin: 4px 0 10px; color: var(--ink-soft); }
+.news h2 { font-size: 15px; margin: 12px 0 4px; border-bottom: 1px solid var(--bevel-dark); }
+.news ul { list-style: none; margin: 0; padding: 0; }
+.news li a { display: block; padding: 2px 4px; color: inherit; text-decoration: none; border-radius: 2px; }
+.news li a:hover { background: rgba(139, 115, 85, .18); }
+.news .np-t { font: 700 11px ui-monospace, Menlo, monospace; color: var(--ink-soft); margin-right: 4px; }
+.news .np-stars { color: #c08a10; font-size: 12px; }
+.news .np-muted, .news .np-src { color: var(--ink-soft); font-size: 11px; }
+.news .np-bad { color: #b0302a; }
+.news code { font: 11px ui-monospace, Menlo, monospace; background: rgba(139, 115, 85, .15); padding: 0 3px; }
+.news .np-foot { font-size: 11px; font-style: italic; color: var(--ink-soft); margin-top: 12px; }
+
+@media (max-width: 1100px) {
+  .replaybar { left: 12px; right: 12px; top: auto; bottom: 196px; }
+}

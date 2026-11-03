@@ -363,6 +363,8 @@ for (const c of cast) {
 }
 
 process.env.KAFRA_PROJECTS_DIR = PROJECTS;
+// Only the simulated transcripts; this machine's real Codex/Gemini sessions stay out.
+process.env.KAFRA_SOURCES ??= 'claude-code';
 process.env.KAFRA_PORT ??= '4319';
 await import('../src/server.mjs');
 console.log(`   simulasi: ${cast.length} adventurer, ${Object.keys(REPOS).length} kota di ${ROOT}`);

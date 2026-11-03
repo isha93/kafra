@@ -14,7 +14,11 @@
 <div class="window panel worldmap">
   <div class="titlebar">
     <span class="title">World Map</span>
-    <a class="count" href="party.html" title="Tampilan tabel">Party Window ↗</a>
+    <span class="count">
+      <button id="replay-open" class="tb-btn" type="button" title="Putar ulang hari ini (R)">⏪ Replay</button>
+      <button id="news-open" class="tb-btn" type="button" title="Koran Kafra hari ini">📰</button>
+      <a href="party.html" title="Tampilan tabel">↗</a>
+    </span>
   </div>
   <div id="towns" class="towns"><div class="empty">Menghubungi Kafra…</div></div>
   <div class="statusbar">
@@ -23,6 +27,22 @@
     <span id="census"></span>
   </div>
 </div>
+
+<div id="replaybar" class="window panel replaybar" hidden>
+  <div class="titlebar"><span class="title">⏪ Replay</span><span class="count" id="rb-time">--:--</span></div>
+  <div class="rb-row">
+    <button id="rb-play" class="rb-btn" type="button" title="Putar / jeda (Spasi)">▶</button>
+    <select id="rb-speed" class="rb-speed" title="Kecepatan">
+      <option value="10">×10</option><option value="60" selected>×60</option><option value="300">×300</option><option value="1200">×1200</option>
+    </select>
+    <input id="rb-day" class="rb-day" type="date" title="Pilih hari">
+    <div class="rb-track"><div id="rb-marks" class="rb-marks"></div><input id="rb-slider" type="range" min="0" max="1000" value="0"></div>
+    <button id="rb-news" class="rb-btn" type="button" title="Koran hari ini">📰</button>
+    <button id="rb-live" class="rb-btn live" type="button" title="Kembali ke sekarang (Esc)">● Live</button>
+  </div>
+</div>
+
+<div id="news" class="window news" hidden></div>
 
 <div class="window panel info">
   <div class="titlebar">

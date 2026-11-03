@@ -157,6 +157,31 @@ async function computeStats(root) {
   };
 }
 
+/** Commits between two instants, newest first, for replays of older days. */
+export async function commitsBetween(root, from, to) {
+  const log = await git(root, [
+    'log', `--since=${new Date(from).toISOString()}`, `--until=${new Date(to).toISOString()}`,
+    '--no-merges', '--no-ext-diff', '--no-textconv', '--numstat', '--pretty=format:%x00%h%x09%at%x09%an%x09%s',
+  ]).catch(() => '');
+  const out = [];
+  for (const chunk of log.split('\0')) {
+    const [head, ...rest] = chunk.split('\n');
+    if (!head) continue;
+    const [hash, at, author, subject] = head.split('\t');
+    const touched = new Set();
+    let added = 0, removed = 0;
+    for (const line of rest) {
+      const [a, r, path] = line.split('\t');
+      if (!path) continue;
+      added += Number(a) || 0;
+      removed += Number(r) || 0;
+      touched.add(districtOf(path.replace(/\{.*? => (.*?)\}/, '$1')));
+    }
+    out.push({ hash, at: Number(at) * 1000, author, subject, added, removed, districts: [...touched] });
+  }
+  return out.slice(0, 200);
+}
+
 /**
  * Town stats for a repo, cached.
  *

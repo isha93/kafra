@@ -71,6 +71,14 @@
         0.516,
         0.734
       ]
+    },
+    "wizard": {
+      "sheet": "characters/wizard.json",
+      "scale": 1.25,
+      "anchor": [
+        0.508,
+        0.734
+      ]
     }
   },
   "buildings": {

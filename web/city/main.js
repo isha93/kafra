@@ -13,6 +13,8 @@ import * as ui from './ui.js';
 import { loadArt } from './assets.js';
 import { skyAt, isStormy } from './sky.js';
 import { bindStage, setMusicMood } from './audio.js';
+import { replay } from './replay.js';
+import { renderNewspaper } from './newspaper.js';
 
 TextureSource.defaultOptions.scaleMode = 'nearest';
 
@@ -153,6 +155,14 @@ function spotTravellers(data) {
   }
 }
 
+/** Drop every town, so the next render builds afresh without "arrived" noise. */
+function resetWorld() {
+  for (const [, { town, marker }] of towns) { town.destroy(); marker.view.destroy({ children: true }); }
+  towns.clear();
+  agentHome.clear();
+  layout = { key: '', positions: new Map(), kingdoms: [] };
+}
+
 function render(data) {
   snapshot = data;
   if (data.error) { ui.setStatus(data.error, false); return; }
@@ -291,10 +301,62 @@ app.ticker.add((ticker) => {
   for (let i = travellers.length - 1; i >= 0; i--) if (travellers[i].tick(dt)) travellers.splice(i, 1);
 });
 
+/* ── Replay and newspaper ───────────────────────────────────────────────── */
+
+let liveSnapshot = null;
+ui.setClock(() => replay.now());
+ui.setQuiet(() => replay.active);
+
+const news = document.getElementById('news');
+function openNews(data) {
+  if (!data) return;
+  renderNewspaper(data, news);
+  news.hidden = false;
+}
+news.addEventListener('click', (e) => {
+  if (e.target.closest('.np-close')) { news.hidden = true; return; }
+  const jump = e.target.closest('.np-jump');
+  if (!jump) return;
+  e.preventDefault();
+  news.hidden = true;
+  replay.seek(Number(jump.dataset.t) + 1000);
+  if (jump.dataset.agent) requestAnimationFrame(() => { const sel = { type: 'agent', id: jump.dataset.agent }; select(sel); focus(sel); });
+});
+
+replay.bind({
+  onFrame: (frame) => { if (!replay.rendered) { resetWorld(); replay.rendered = true; } render(frame); },
+  onExit: () => {
+    replay.rendered = false;
+    news.hidden = true;
+    resetWorld();
+    ui.logSystem('Kembali ke waktu sekarang.');
+    if (liveSnapshot) render(liveSnapshot);
+  },
+  onLoad: (data) => { replay.rendered = false; ui.logSystem(`Replay ${new Date(data.from).toLocaleDateString('id-ID')} dimuat.`); },
+  onNews: openNews,
+});
+document.getElementById('replay-open').onclick = () => (replay.active ? replay.close() : replay.open());
+document.getElementById('news-open').onclick = async () => {
+  if (!replay.active) await replay.open();
+  openNews(replay.data);
+};
+app.ticker.add((ticker) => replay.tick(Math.min(0.1, ticker.deltaMS / 1000)));
+
 const source = new EventSource('/api/world/stream');
 source.onopen = () => ui.logSystem('Terhubung ke Kafra. Memantau semua adventurer (read-only).');
-source.onmessage = (e) => { ui.setStatus('live', true); render(JSON.parse(e.data)); };
+source.onmessage = (e) => {
+  ui.setStatus('live', true);
+  liveSnapshot = JSON.parse(e.data);
+  // While replaying, the live world waits in the wings.
+  if (!replay.active) render(liveSnapshot);
+};
 source.onerror = () => ui.setStatus('terputus — mencoba lagi', false);
 
-ui.bindKeys({ focus: (sel) => { select(sel); focus(sel); }, snapshot: () => snapshot, world: fitWorld });
+ui.bindKeys({
+  focus: (sel) => { if (!sel && replay.active && !news.hidden) { news.hidden = true; return; } select(sel); focus(sel); },
+  snapshot: () => snapshot,
+  world: fitWorld,
+  replayKey: () => (replay.active ? replay.close() : replay.open()),
+  playKey: () => replay.toggle(),
+});
 ui.bindAlerts();

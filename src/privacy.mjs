@@ -143,3 +143,25 @@ export function publicSessions(data) {
     })),
   };
 }
+
+/**
+ * Replay timelines for public mode: ids made opaque to match publicWorld,
+ * buildings renamed to the same numbered districts, and every piece of text
+ * (labels, file names, prompts, replies) dropped.
+ */
+export function publicTimelines(world, pub) {
+  const timelines = {};
+  world.towns.forEach((t) => {
+    const order = t.districts.map((d) => d.name).sort();
+    const districtName = (name) => (name && order.includes(name) ? `Distrik ${order.indexOf(name) + 1}` : null);
+    for (const a of t.agents) {
+      const events = world.timelines[a.id];
+      if (!events) continue;
+      timelines[opaque(a.id)] = events.map((e) => ({
+        t: e.t, type: e.type, id: e.id, kind: e.kind, name: e.name, error: e.error, hp: e.hp,
+        building: e.type === 'tool' ? districtName(e.building) : undefined,
+      }));
+    }
+  });
+  return { ...pub, from: world.from, to: world.to, timelines };
+}

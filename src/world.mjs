@@ -1,6 +1,6 @@
-import { listSessions } from './sources/claude-code.mjs';
-import { repoRootOf, repoStats, districtOfFile } from './repos.mjs';
-import { loadConfig, visible, publicWorld } from './privacy.mjs';
+import { listSessions, replaySessions } from './sources/index.mjs';
+import { repoRootOf, repoStats, districtOfFile, commitsBetween } from './repos.mjs';
+import { loadConfig, visible, publicWorld, publicTimelines } from './privacy.mjs';
 import { redact } from './activity.mjs';
 
 /**
@@ -74,12 +74,8 @@ function touchedDistricts(agent, root) {
   return [...out];
 }
 
-export async function buildWorld() {
-  // Read first: redaction words are applied while transcripts are parsed.
-  const config = loadConfig();
-  const { sessions, error, scannedAt } = await listSessions();
-  if (error) return { error, towns: [], scannedAt };
-
+/** Sessions → towns: one per repo, with stats, placed agents and party members. */
+async function townsFrom(sessions, config) {
   const towns = new Map();
 
   for (const s of sessions) {
@@ -139,6 +135,97 @@ export async function buildWorld() {
 
   // Busy towns first, then most recently visited.
   out.sort((a, b) => b.active - a.active || a.lastSeenMs - b.lastSeenMs);
-  const world = { towns: out, scannedAt, configError: config.error ?? undefined };
+  return out;
+}
+
+export async function buildWorld() {
+  // Read first: redaction words are applied while transcripts are parsed.
+  const config = loadConfig();
+  const { sessions, error, scannedAt } = await listSessions();
+  if (error) return { error, towns: [], scannedAt };
+  const world = { towns: await townsFrom(sessions, config), scannedAt, configError: config.error ?? undefined };
   return config.public ? publicWorld(world) : world;
+}
+
+/* ── Replay ─────────────────────────────────────────────────────────────── */
+
+const REPLAY_SPAN_MAX = 2 * 86_400_000;
+const REPLAY_CACHE_DAYS = 3;
+const REPLAY_CACHE_MS = 10 * 60_000;
+const replayCache = new Map();
+
+/**
+ * A stretch of history as towns plus one timeline per agent. The client
+ * replays it by asking "what was each agent doing at time t", so the server
+ * sends events, not frames.
+ *
+ * Towns, privacy and public mode work exactly as in the live world; event
+ * text is redacted the same way, and stripped entirely in public mode.
+ */
+export async function buildReplay({ from, to }) {
+  to = Math.min(to, Date.now());
+  if (!(to > from) || to - from > REPLAY_SPAN_MAX) throw new Error('rentang replay tidak valid (maks 2 hari)');
+  const key = `${from}-${to}`;
+  const hit = replayCache.get(key);
+  // A finished day never changes, so it is kept for a while; today is re-read
+  // every 20 seconds at most. Either way only a few days stay in memory: a
+  // day costs ~20 MB parsed, and re-reading one from disk takes under a second.
+  const fresh = hit && (to < Date.now() - 60_000 ? Date.now() - hit.at < REPLAY_CACHE_MS : Date.now() - hit.at < 20_000);
+  if (fresh) return hit.promise;
+  const promise = computeReplay(from, to);
+  replayCache.delete(key);
+  replayCache.set(key, { at: Date.now(), promise });
+  while (replayCache.size > REPLAY_CACHE_DAYS) replayCache.delete(replayCache.keys().next().value);
+  return promise;
+}
+
+async function computeReplay(from, to) {
+  const config = loadConfig();
+  const raw = await replaySessions({ from, to });
+
+  // Shape them like live sessions so the same town builder applies: everyone
+  // starts asleep; the client wakes them as their events come up.
+  const byId = new Map(raw.map((r) => [r.id, r]));
+  const asSession = (r) => ({
+    ...r, kind: 'resting', status: 'resting', tools: [], tool: null, hp: 100, tokens: 0,
+    quest: r.title, preview: '', lastSeen: new Date(r.events.at(-1).t).toISOString(),
+    ageMs: Date.now() - r.events.at(-1).t, party: [],
+  });
+  const leaders = raw.filter((r) => !r.leader || !byId.has(r.leader)).map(asSession);
+  const leaderById = new Map(leaders.map((l) => [l.id, l]));
+  for (const r of raw) if (r.leader && leaderById.has(r.leader)) leaderById.get(r.leader).party.push(asSession(r));
+
+  const towns = await townsFrom(leaders, config);
+  const timelines = {};
+  for (const town of towns) {
+    const names = town.districts.map((d) => d.name);
+    // The stretch's own commits, not just the last week's.
+    if (town.root) {
+      town.commits = (await commitsBetween(town.root, from, to)).map((c) => ({ ...c, subject: redact(c.subject), author: redact(c.author) }));
+    }
+    for (const d of town.districts) d.dirty = 0;
+    for (const a of town.agents) {
+      const r = byId.get(a.id);
+      if (!r) continue;
+      let lastHp = null;
+      timelines[a.id] = r.events.flatMap((e) => {
+        // HP changes slowly; one event per point of change is plenty.
+        if (e.type === 'hp') {
+          if (e.hp === lastHp) return [];
+          lastHp = e.hp;
+          return [e];
+        }
+        if (e.type !== 'tool') return [e];
+        const district = town.root ? districtOfFile(town.root, e.file) : null;
+        return [{
+          ...e,
+          label: e.label ? redact(e.label) : undefined,
+          file: town.root && e.file ? relFile(town.root, e.file) : e.file,
+          building: e.kind === 'build' && district ? (names.includes(district) ? district : '(root)') : null,
+        }];
+      });
+    }
+  }
+  const world = { from, to, towns, timelines, configError: config.error ?? undefined };
+  return config.public ? publicTimelines(world, publicWorld(world)) : world;
 }

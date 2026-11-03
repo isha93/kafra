@@ -9,5 +9,6 @@ import { writeFixtures } from './fixtures.mjs';
 const out = join(tmpdir(), 'kafra-demo-projects');
 writeFixtures(out, process.cwd());
 process.env.KAFRA_PROJECTS_DIR = out;
+process.env.KAFRA_SOURCES ??= 'claude-code';
 process.env.KAFRA_PORT ??= '4318';
 await import('../src/server.mjs');

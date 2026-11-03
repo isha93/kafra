@@ -58,6 +58,8 @@ export const CLASSES = {
   bard: { h: '#d4a017', b: '#2471a3', d: '#f5f5f5', accent: 0x2e86c1 },
   novice: { h: '#7a5230', b: '#a08060', d: '#6e5840', accent: 0x95a5a6 },
   kafra: { h: '#5a3a22', b: '#2a3f7a', d: '#ffffff', accent: 0xe8a0b8 },
+  wizard: { h: '#1f2a6b', b: '#2e3f9a', d: '#c0c8e0', accent: 0x3949ab },
+  sage: { h: '#d8e4f8', b: '#5b8fd6', d: '#ffffff', accent: 0x64b5f6 },
   // Townsfolk: ambient, never an agent.
   villager1: { h: '#c47a3a', b: '#8aa05a', d: '#e8dcc0', accent: 0 },
   villager2: { h: '#3a2a1a', b: '#c8a050', d: '#7a5230', accent: 0 },

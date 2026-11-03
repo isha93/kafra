@@ -12,6 +12,13 @@ import { sfx, setSfx, setMusic } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
 
+/** "Now": the wall clock, or the replay's clock while replaying. */
+let now = () => Date.now();
+/** True while a replay plays: alerts are history then, not news. */
+let quiet = () => false;
+export function setClock(fn) { now = fn; }
+export function setQuiet(fn) { quiet = fn; }
+
 /** Activity icon as HTML: generated art when installed, else the glyph. */
 function icon(kind) {
   const art = iconFor(kind);
@@ -103,7 +110,7 @@ function agentDetail({ town, agent: a }) {
   const where = a.file ? `<code>${esc(a.file)}</code>` : a.tool?.label ? esc(a.tool.label) : '';
   return `
     <div class="who">
-      <div><b>${esc(a.isParty ? a.agentType : a.job)}</b> <span class="muted">${esc(a.model)}</span></div>
+      <div><b>${esc(a.isParty ? a.agentType : a.job)}</b> <span class="muted">${esc(a.sourceName ?? '')} · ${esc(a.model)}</span></div>
       <div class="muted">${esc(town.town)} · ${esc(town.name)}${a.branch ? ` · ⎇ ${esc(a.branch)}` : ''}</div>
     </div>
     ${a.title ? `<div class="quest"><span class="lbl">Quest</span>${esc(a.title)}</div>` : ''}
@@ -296,7 +303,7 @@ export function logEvent(ev, pick) {
   }
   const line = document.createElement('div');
   line.className = `line ${cls}`;
-  const time = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const time = new Date(now()).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
   const kind = ev.type === 'tool' ? ev.tool.kind : ev.type === 'waiting' ? 'waiting' : ev.type === 'commit' ? 'deliver' : null;
   line.innerHTML = `<span class="t">${time}</span> <span class="where">[${esc(ev.town.town)}]</span> ${kind && iconFor(kind) ? icon(kind) + ' ' : ''}${esc(text)}`;
   alert(ev, text);
@@ -343,17 +350,18 @@ export function renderParty(snapshot, selection, pick) {
   awake.sort((x, y) => STATUS[statusOf(x.a)].rank - STATUS[statusOf(y.a)].rank || since(x.a) - since(y.a));
   const asleep = all.length - awake.length;
 
+  const at = now();
   el.innerHTML = awake.map(({ a, t }) => {
     const st = statusOf(a);
     const sel = selection?.type === 'agent' && selection.id === a.id;
     return `
       <button class="member s-${st} ${sel ? 'sel' : ''}" data-id="${esc(a.id)}" style="--st:${STATUS[st].css}" title="${esc(a.title || '')}">
         ${portrait(a)}
-        <span class="m-name">${esc(memberName(a))}</span>
+        <span class="m-name">${esc(memberName(a))}${a.source && a.source !== 'claude-code' ? ` <span class="m-src">${esc(a.sourceName ?? a.source)}</span>` : ''}</span>
         <span class="m-town">${esc(t.town)} · ${esc(t.name)}</span>
         <span class="m-act">${memberAction(a)}</span>
         <span class="m-meta"><span class="m-st">${STATUS[st].label}</span>
-          <span class="m-time" data-since="${since(a)}">${duration(Date.now() - since(a))}</span>
+          <span class="m-time" data-since="${since(a)}">${duration(at - since(a))}</span>
           ${hpBar(a.hp)}</span>
       </button>`;
   }).join('') + (asleep ? `<span class="party-more">+${asleep} istirahat</span>` : '')
@@ -371,7 +379,7 @@ export function renderParty(snapshot, selection, pick) {
 /** Durations tick every second between server updates. */
 setInterval(() => {
   for (const el of document.querySelectorAll('.m-time[data-since]')) {
-    el.textContent = duration(Date.now() - Number(el.dataset.since));
+    el.textContent = duration(now() - Number(el.dataset.since));
   }
 }, 1000);
 
@@ -386,7 +394,7 @@ const savePrefs = () => { try { localStorage.setItem('kafra.alerts', JSON.string
 const chime = (type) => sfx(type === 'waiting' ? 'chimeUp' : 'chimeDown');
 
 function alert(ev, text) {
-  if (!ALERT_TYPES.has(ev.type)) return;
+  if (!ALERT_TYPES.has(ev.type) || quiet()) return;
   chime(ev.type);
   // A browser notification only when the tab is out of sight; on screen, the party bar already says it.
   if (prefs.notify && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
@@ -449,7 +457,7 @@ export function setStatus(text, ok) {
 }
 
 /** Tab cycles through active agents; Esc clears the selection. */
-export function bindKeys({ focus, snapshot, world }) {
+export function bindKeys({ focus, snapshot, world, replayKey, playKey }) {
   pickHandler = focus;
   let i = -1;
   window.addEventListener('keydown', (e) => {
@@ -463,5 +471,7 @@ export function bindKeys({ focus, snapshot, world }) {
     }
     if (e.key === 'Escape') focus(null);
     if (e.key === 'm' || e.key === 'M') world?.();
+    if (e.key === 'r' || e.key === 'R') replayKey?.();
+    if (e.key === ' ' && document.body.classList.contains('replaying')) { e.preventDefault(); playKey?.(); }
   });
 }

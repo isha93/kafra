@@ -13,8 +13,11 @@ would change that is opt-in and listed last.
 - World map: kingdoms per GitHub owner, roads, far-zoom pins
 - Party bar, status rings, alerts (browser notification, chime, tab title)
 - Living simulation (`./kafra.sh simulate`)
-- Hardening: DNS-rebinding and cross-site protection, strict CSP without eval,
-  `npm ci --ignore-scripts`
+- Hardening: DNS-rebinding and cross-site protection, strict CSP without eval
+- No dependencies: PixiJS vendored, no `npm install`
+- Agents: Claude Code, Codex, Gemini CLI
+- Replay of any day, and the daily Kafra newspaper
+- Menu bar (SwiftBar), native notifications, autostart at login
 - Privacy: `kafra.config.json` (hide / only / redact) and public mode
 - Synthesised sound: positional effects per activity, and generative
   background music per biome
@@ -36,16 +39,17 @@ would change that is opt-in and listed last.
 
 ## 3. Deeper monitoring
 
-- [ ] Timeline replay per town: scrub back through today
-- [ ] Daily "Kafra newspaper": agents, commits, failed and fixed tests
+- [x] Timeline replay: any day, ×10–×1200, commit and failure marks
+- [x] Daily "Kafra newspaper": agents, commits, failed and fixed tests, jump to moments
 - [ ] Arena test history: pass and fail over time
 - [ ] Log context compaction (HP refilling) in the chat log
 
 ## 4. More agents
 
-- [ ] Codex CLI source
-- [ ] Gemini CLI, Aider, Cursor sources
-- [ ] A job class per tool
+- [x] Codex CLI / Desktop source (Wizard)
+- [x] Gemini CLI source (Sage)
+- [x] A job class per tool
+- [ ] Aider, Cursor, OpenCode sources
 
 ## 5. Game layer
 
@@ -57,6 +61,8 @@ would change that is opt-in and listed last.
 
 ## 6. Quality
 
+- [x] Bounded memory: replay cache of 3 days / 10 min, heap capped under autostart
+- [x] Tests clean up after themselves; `./kafra.sh clean` for temp files
 - [ ] `fs.watch` instead of polling every 2 s
 - [ ] Browser tests for the city (Playwright)
 - [ ] Colour-blind palette and reduced-motion mode

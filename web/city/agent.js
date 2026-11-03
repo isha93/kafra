@@ -258,6 +258,7 @@ export class AgentSprite {
     const anim = moving ? 'walk' : sitting ? 'sit' : d.kind === 'waiting' || d.kind === 'ask' ? 'idle' : d.kind;
     const f = bodyFrame(d.sprite, anim, this.heading, moving ? this.walkTimer : this.phase);
     this.body.texture = f.texture;
+    this.body.tint = f.tint;
     this.body.anchor.set(f.anchor[0], f.anchor[1]);
     // Breathing while still: a 2% squash is enough to read as alive.
     const breath = moving ? 1 : 1 + Math.sin(this.phase * 2.4) * 0.02;

@@ -2,7 +2,7 @@
   "name": "kafra",
   "version": "0.1.0",
   "private": true,
-  "description": "Ragnarok-flavoured city view of your Claude Code agents",
+  "description": "A Ragnarok-style world for monitoring your AI coding agents, locally",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -13,8 +13,5 @@
     "demo": "node scripts/demo.mjs",
     "test": "node --test tests/*.test.mjs",
     "simulate": "node scripts/simulate.mjs"
-  },
-  "dependencies": {
-    "pixi.js": "8.22.0"
   }
 }

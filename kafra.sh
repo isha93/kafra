@@ -8,7 +8,8 @@
 #   ./kafra.sh public     kotamu tanpa teks apa pun, aman untuk dipamerkan
 #   ./kafra.sh menubar    pasang ikon menu bar (SwiftBar)
 #   ./kafra.sh autostart on|off|status   jalan sendiri tiap login ke Mac
-#   ./kafra.sh setup      cuma siapkan (cek Node, npm install)
+#   ./kafra.sh setup      cuma cek perbekalan (Node, git)
+#   ./kafra.sh clean      hapus sisa file sementara (simulasi, demo, test)
 #   ./kafra.sh test       jalankan test
 #   ./kafra.sh help       bantuan
 #
@@ -37,7 +38,7 @@ local_notice() {
   printf '%s\n' "     • Hanya MEMBACA: transcript di ~/.claude/projects dan git di repo-mu."
   printf '%s\n' "     • Tidak menulis ke repo, tidak memasang hooks, tidak mengubah setting Claude Code."
   printf '%s\n' "     • Tidak memanggil model AI dan tidak memakai token."
-  printf '%s\n' "     • Satu-satunya akses internet: npm install sekali (PixiJS)."
+  printf '%s\n' "     • Tanpa npm install dan tanpa akses internet: semua yang dibutuhkan ada di repo."
   printf '%s\n' "       (scripts/gen-assets.mjs ke Retro Diffusion hanya kalau kamu jalankan sendiri.)${OFF}"
   echo
 }
@@ -53,7 +54,8 @@ usage() {
     ${GOLD}public${OFF}     kotamu tanpa teks: aman untuk layar bersama   → http://127.0.0.1:4317
     ${GOLD}menubar${OFF}    pasang ikon menu bar macOS (lewat SwiftBar)
     ${GOLD}autostart${OFF}  on | off | status — Kafra jalan sendiri tiap login ke Mac
-    ${GOLD}setup${OFF}      cuma cek Node dan npm install
+    ${GOLD}setup${OFF}      cuma cek Node dan git
+    ${GOLD}clean${OFF}      hapus sisa file sementara (simulasi, demo, test)
     ${GOLD}test${OFF}       jalankan test
     ${GOLD}help${OFF}       pesan ini
 
@@ -97,14 +99,9 @@ setup() {
   kafra "Selamat datang di Kafra Service! Saya periksa perbekalanmu dulu…"
   check_node
   check_git
-  if [[ -d node_modules/pixi.js ]]; then
-    ok "Perbekalan sudah lengkap (node_modules)"
-  else
-    kafra "Mengisi tas petualang (npm ci)…"
-    # Exactly the locked versions, and no package install scripts get to run.
-    npm ci --ignore-scripts --no-audit --no-fund --loglevel=error >/dev/null || fail "npm ci gagal. Coba jalankan 'npm ci' manual untuk melihat errornya."
-    ok "PixiJS terpasang"
-  fi
+  # Nothing to install: PixiJS ships in web/vendor/, and Kafra has no npm dependencies.
+  [[ -f web/vendor/pixi.js ]] || fail "web/vendor/pixi.js hilang. Ambil ulang repo-nya (git checkout web/vendor)."
+  ok "Perbekalan lengkap (tanpa npm install)"
 }
 
 # ── Menjalankan ──────────────────────────────────────────────────────────────
@@ -194,6 +191,21 @@ install_menubar() {
   printf '%s\n' "  ${DIM}Notifikasi macOS muncul saat ada agent yang mulai menunggu. Kafra harus jalan (./kafra.sh).${OFF}"
 }
 
+# ── Housekeeping ─────────────────────────────────────────────────────────────
+
+# Everything Kafra itself writes outside the repo lives in the temp folder under
+# these names. Your agents' sessions and repos are never touched.
+clean_temp() {
+  local tmp freed=0
+  tmp=$(node -p 'require("os").tmpdir()')
+  for p in "$tmp"/kafra-sim "$tmp"/kafra-demo-projects "$tmp"/kafra-test-* "$tmp"/kafra-sources-*; do
+    [[ -e "$p" ]] || continue
+    freed=$((freed + $(du -sk "$p" | cut -f1)))
+    rm -rf "$p"
+  done
+  ok "Sisa file sementara dihapus ($((freed / 1024)) MB)"
+}
+
 # ── Autostart (launchd) ──────────────────────────────────────────────────────
 
 LABEL="dev.kafra.server"
@@ -228,6 +240,8 @@ autostart_on() {
   <key>ProgramArguments</key>
   <array>
     <string>$(xml_escape "$node")</string>
+    <!-- A small heap cap keeps a long-running server lean; it needs ~30 MB of heap. -->
+    <string>--max-old-space-size=128</string>
     <string>$(xml_escape "$PWD/src/server.mjs")</string>
   </array>
   <key>WorkingDirectory</key><string>$(xml_escape "$PWD")</string>
@@ -293,6 +307,8 @@ case "$cmd" in
   menubar)
     banner
     install_menubar ;;
+  clean)
+    clean_temp ;;
   autostart)
     case "${2:-status}" in
       on) banner; autostart_on ;;

@@ -85,6 +85,7 @@ const ASSETS = {
   villager1: { kind: 'character', n: 2, prompt: 'medieval villager woman, green dress, orange hair, carrying a basket' },
   villager2: { kind: 'character', n: 2, prompt: 'medieval farmer man, straw hat, yellow shirt, brown trousers' },
   villager3: { kind: 'character', n: 2, prompt: 'medieval merchant, red vest, blonde hair, leather satchel' },
+  wizard: { kind: 'character', n: 1, prompt: 'fantasy wizard, deep blue robe with silver trim, tall pointed hat, wooden staff with a glowing crystal' },
 
   'tile.grass': { kind: 'tile', as: 'grass', n: 2, prompt: 'short green meadow grass with a few tiny flowers' },
   'tile.road': { kind: 'tile', as: 'road', n: 2, prompt: 'warm beige cobblestone street' },
