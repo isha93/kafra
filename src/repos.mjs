@@ -16,6 +16,8 @@ const run = promisify(execFile);
  *   viewing a repo should never start one.
  * - GIT_TERMINAL_PROMPT=0: nothing here talks to a remote, and nothing may block
  *   waiting for credentials if that ever changes.
+ * - --no-ext-diff --no-textconv on log: a repo's diff driver config names a
+ *   program to run; reading stats must never launch one.
  */
 const GIT_ENV = {
   ...process.env,
@@ -74,7 +76,7 @@ async function computeStats(root) {
     git(root, ['remote', 'get-url', 'origin']).catch(() => ''),
     git(root, ['rev-parse', '--abbrev-ref', 'HEAD']).catch(() => ''),
     git(root, ['ls-files']).catch(() => ''),
-    git(root, ['log', '--since=7.days.ago', '--no-merges', '--numstat', '--pretty=format:%x00%h%x09%at%x09%an%x09%s']).catch(() => ''),
+    git(root, ['log', '--since=7.days.ago', '--no-merges', '--no-ext-diff', '--no-textconv', '--numstat', '--pretty=format:%x00%h%x09%at%x09%an%x09%s']).catch(() => ''),
     git(root, ['status', '--porcelain=v1']).catch(() => ''),
     git(root, ['rev-list', '--count', 'HEAD']).catch(() => '0'),
     git(root, ['rev-list', '--count', '--since=30.days.ago', 'HEAD']).catch(() => '0'),

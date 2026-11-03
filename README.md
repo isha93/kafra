@@ -146,11 +146,23 @@ so without this an agent would look like it is "casting" almost all the time.
 Kafra only reads. It installs no hooks, never writes to `~/.claude` or to your
 repos, and makes no outbound network calls.
 
-- The server binds to `127.0.0.1` only.
+- The server binds to `127.0.0.1` only, so other machines can't reach it.
+- **Other websites can't reach it either.** Every request must carry a `Host` of
+  `127.0.0.1`/`localhost` on Kafra's port, which blocks DNS rebinding. Requests
+  that browsers mark as coming from another site (`Origin`, `Sec-Fetch-Site`)
+  are refused. Only `GET`/`HEAD` are accepted.
+- **Strict Content Security Policy:** scripts load only from Kafra itself, with
+  no `eval`. PixiJS's no-eval patch is loaded for this. The page can't be
+  framed and sends no referrer.
+- Static files resolve strictly inside `web/`, and `node_modules` is never
+  browsable.
+- `./kafra.sh` installs with `npm ci --ignore-scripts`: exactly the locked
+  versions, with no package install scripts.
 - Git runs through `execFile` (no shell) with fixed arguments.
   `GIT_OPTIONAL_LOCKS=0` stops `git status` from taking `index.lock` and
-  colliding with an agent that is committing. `core.fsmonitor=false` stops a
-  repo-configured fsmonitor from ever being launched.
+  colliding with an agent that is committing. `core.fsmonitor=false`,
+  `--no-ext-diff` and `--no-textconv` stop repo config from launching any
+  program while Kafra reads stats.
 - Git stats are cached for 10 seconds per repo, however many clients connect.
 - File contents are never read, only paths and counts.
 - Displayed text (quests, prompts, tool labels) is scrubbed of

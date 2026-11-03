@@ -1,9 +1,10 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { join, extname, normalize } from 'node:path';
+import { extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { listSessions, PROJECTS_DIR } from './sources/claude-code.mjs';
 import { buildWorld } from './world.mjs';
+import { allowedHost, allowedOrigin, SECURITY_HEADERS } from './guard.mjs';
 
 const PORT = Number(process.env.KAFRA_PORT ?? 4317);
 
@@ -16,12 +17,33 @@ const PORT = Number(process.env.KAFRA_PORT ?? 4317);
  */
 const HOST = '127.0.0.1';
 
-const WEB = join(fileURLToPath(new URL('../web/', import.meta.url)));
+const WEB = resolve(fileURLToPath(new URL('../web/', import.meta.url)));
 
-/** Third-party code the page may load, by explicit path only — node_modules is never browsable. */
+const pixiFile = (rel) => fileURLToPath(new URL(`../node_modules/pixi.js/dist/${rel}`, import.meta.url));
+
+/**
+ * Third-party code the page may load, by explicit path only — node_modules is
+ * never browsable.
+ *
+ * PixiJS compiles shader helpers with `new Function` unless its unsafe-eval
+ * package (misleadingly named: it *removes* the need for eval) is installed.
+ * That package only exists as a classic script that patches the global PIXI,
+ * so the page loads both as classic scripts and the city's modules import
+ * from a generated shim. The CSP can then refuse eval outright.
+ */
 const VENDOR = {
-  '/vendor/pixi.mjs': fileURLToPath(new URL('../node_modules/pixi.js/dist/pixi.min.mjs', import.meta.url)),
+  '/vendor/pixi.js': pixiFile('pixi.min.js'),
+  '/vendor/pixi-csp.js': pixiFile('packages/unsafe-eval.min.js'),
 };
+
+/** `export const { Application, … } = globalThis.PIXI`, with every name the ESM build exports. */
+async function pixiShim() {
+  const esm = await readFile(pixiFile('pixi.min.mjs'), 'utf8');
+  const block = esm.match(/export\s*\{([^}]*)\}\s*;?\s*(\/\/.*)?\s*$/)?.[1] ?? '';
+  const names = block.split(',').map((s) => s.trim().split(/\s+as\s+/).pop()).filter((n) => /^[A-Za-z_$][\w$]*$/.test(n));
+  return `const P = globalThis.PIXI;\nif (!P) throw new Error('PixiJS did not load');\nexport const { ${names.join(', ')} } = P;\n`;
+}
+let shim = null;
 const POLL_MS = 2000;
 
 const TYPES = {
@@ -36,18 +58,20 @@ const TYPES = {
 };
 
 function send(res, code, type, body) {
-  res.writeHead(code, { 'content-type': type });
+  res.writeHead(code, { ...SECURITY_HEADERS, 'content-type': type });
   res.end(body);
 }
 
-async function serveStatic(req, res) {
-  const path = req.url.split('?')[0];
-  const rel = normalize(path === '/' ? 'index.html' : path.slice(1));
-  // normalize() collapses "..", but a path that still starts with one escapes WEB.
-  if (rel.startsWith('..')) return send(res, 403, 'text/plain', 'nope');
+async function serveStatic(path, res) {
+  let rel;
+  try { rel = decodeURIComponent(path === '/' ? 'index.html' : path.slice(1)); } catch { return send(res, 400, 'text/plain', 'bad path'); }
+  // Resolve, then require the result to still be inside web/: catches "..", encoded
+  // "%2e%2e", absolute paths and NUL bytes alike.
+  const file = resolve(WEB, rel);
+  if (!file.startsWith(WEB + sep) || rel.includes('\0')) return send(res, 403, 'text/plain', 'nope');
   try {
-    const body = await readFile(join(WEB, rel));
-    send(res, 200, TYPES[extname(rel)] ?? 'application/octet-stream', body);
+    const body = await readFile(file);
+    send(res, 200, TYPES[extname(file)] ?? 'application/octet-stream', body);
   } catch {
     send(res, 404, 'text/plain', 'not found');
   }
@@ -59,6 +83,7 @@ async function serveStatic(req, res) {
  */
 async function stream(res, produce) {
   res.writeHead(200, {
+    ...SECURITY_HEADERS,
     'content-type': 'text/event-stream',
     'cache-control': 'no-cache',
     connection: 'keep-alive',
@@ -76,6 +101,14 @@ async function stream(res, produce) {
 }
 
 createServer(async (req, res) => {
+  // Refuse before doing any work: wrong host (DNS rebinding), another site's page,
+  // or anything but a read.
+  if (!allowedHost(req.headers.host, PORT)) return send(res, 421, 'text/plain', 'wrong host');
+  if (!allowedOrigin({ origin: req.headers.origin, fetchSite: req.headers['sec-fetch-site'] }, PORT)) {
+    return send(res, 403, 'text/plain', 'cross-site request refused');
+  }
+  if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'text/plain', 'read-only');
+
   const path = req.url.split('?')[0];
   if (path === '/api/sessions') {
     return send(res, 200, 'application/json', JSON.stringify(await listSessions()));
@@ -85,13 +118,18 @@ createServer(async (req, res) => {
     return send(res, 200, 'application/json', JSON.stringify(await buildWorld()));
   }
   if (path === '/api/world/stream') return stream(res, buildWorld);
+  if (path === '/vendor/pixi.mjs') {
+    shim ??= pixiShim().catch(() => null);
+    const body = await shim;
+    return body ? send(res, 200, TYPES['.mjs'], body) : send(res, 404, 'text/plain', 'jalankan npm install dulu');
+  }
   if (VENDOR[path]) {
     return readFile(VENDOR[path]).then(
-      (body) => send(res, 200, TYPES['.mjs'], body),
+      (body) => send(res, 200, TYPES['.js'], body),
       () => send(res, 404, 'text/plain', 'jalankan npm install dulu'),
     );
   }
-  return serveStatic(req, res);
+  return serveStatic(path, res);
 }).listen(PORT, HOST, () => {
   console.log(`⚔  Kafra siap di http://${HOST}:${PORT}`);
   console.log(`   membaca ${PROJECTS_DIR} (read-only)`);

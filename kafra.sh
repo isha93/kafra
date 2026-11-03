@@ -92,8 +92,9 @@ setup() {
   if [[ -d node_modules/pixi.js ]]; then
     ok "Perbekalan sudah lengkap (node_modules)"
   else
-    kafra "Mengisi tas petualang (npm install)…"
-    npm install --no-audit --no-fund --loglevel=error >/dev/null || fail "npm install gagal. Coba jalankan 'npm install' manual untuk melihat errornya."
+    kafra "Mengisi tas petualang (npm ci)…"
+    # Exactly the locked versions, and no package install scripts get to run.
+    npm ci --ignore-scripts --no-audit --no-fund --loglevel=error >/dev/null || fail "npm ci gagal. Coba jalankan 'npm ci' manual untuk melihat errornya."
     ok "PixiJS terpasang"
   fi
 }
