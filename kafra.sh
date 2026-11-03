@@ -6,6 +6,7 @@
 #   ./kafra.sh demo       kota contoh dengan semua animasi
 #   ./kafra.sh simulate   enam kota palsu yang hidup terus
 #   ./kafra.sh public     kotamu tanpa teks apa pun, aman untuk dipamerkan
+#   ./kafra.sh menubar    pasang ikon menu bar (SwiftBar)
 #   ./kafra.sh setup      cuma siapkan (cek Node, npm install)
 #   ./kafra.sh test       jalankan test
 #   ./kafra.sh help       bantuan
@@ -49,6 +50,7 @@ usage() {
     ${GOLD}demo${OFF}       kota contoh, semua animasi sekaligus          → http://127.0.0.1:4318
     ${GOLD}simulate${OFF}   enam kota palsu yang hidup terus              → http://127.0.0.1:4319
     ${GOLD}public${OFF}     kotamu tanpa teks: aman untuk layar bersama   → http://127.0.0.1:4317
+    ${GOLD}menubar${OFF}    pasang ikon menu bar macOS (lewat SwiftBar)
     ${GOLD}setup${OFF}      cuma cek Node dan npm install
     ${GOLD}test${OFF}       jalankan test
     ${GOLD}help${OFF}       pesan ini
@@ -148,11 +150,44 @@ run() {
   KAFRA_PORT=$port exec node "$script"
 }
 
+# ── Menu bar ─────────────────────────────────────────────────────────────────
+
+install_menubar() {
+  [[ "$(uname)" == Darwin ]] || fail "Ikon menu bar hanya untuk macOS."
+  if [[ ! -d /Applications/SwiftBar.app ]]; then
+    kafra "Ikon menu bar memakai SwiftBar (gratis, open source). Pasang dulu:"
+    printf '%s\n' "    ${BOLD}brew install --cask swiftbar${OFF}"
+    printf '%s\n' "    ${DIM}atau unduh dari https://swiftbar.app — lalu jalankan ./kafra.sh menubar lagi.${OFF}"
+    exit 1
+  fi
+  local dir
+  dir=$(defaults read com.ameba.SwiftBar PluginDirectory 2>/dev/null || true)
+  if [[ -z "$dir" ]]; then
+    kafra "Buka SwiftBar sekali dan pilih folder plugin-nya, lalu jalankan ./kafra.sh menubar lagi."
+    open -a SwiftBar
+    exit 1
+  fi
+  dir=${dir/#\~/$HOME}
+  mkdir -p "$dir"
+  # A link, not a copy: updating Kafra updates the plugin too.
+  ln -sf "$PWD/integrations/swiftbar/kafra.10s.sh" "$dir/kafra.10s.sh"
+  ok "Plugin terpasang di $dir"
+  # SwiftBar watches its plugin folder, so a running SwiftBar picks the plugin up
+  # by itself. Don't send it swiftbar:// URLs: SwiftBar 2.1.1 crashes on them
+  # while it is still starting.
+  pgrep -x SwiftBar >/dev/null || open -a SwiftBar
+  kafra "Lihat pojok kanan atas: ⚔ menunjukkan berapa agent yang menunggumu."
+  printf '%s\n' "  ${DIM}Notifikasi macOS muncul saat ada agent yang mulai menunggu. Kafra harus jalan (./kafra.sh).${OFF}"
+}
+
 cmd=${1:-start}
 case "$cmd" in
   start|"")
     banner; setup; check_claude
     run start "${KAFRA_PORT:-4317}" src/server.mjs "Membuka kota-kota tempat agent-mu bekerja…" ;;
+  menubar)
+    banner
+    install_menubar ;;
   public)
     banner; setup
     kafra "Mode publik: nama repo, path, prompt, dan judul commit disembunyikan di server."

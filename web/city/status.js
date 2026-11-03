@@ -25,12 +25,12 @@ export function since(a) {
   return Date.parse(a.lastSeen);
 }
 
+/** Clock-style elapsed time, `0:29`, `2:05`, `1:03:07`; unambiguous in any language. */
 export function duration(ms) {
   const s = Math.max(0, Math.floor(ms / 1000));
-  if (s < 60) return `${s}d`;
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ${String(s % 60).padStart(2, '0')}d`;
-  return `${Math.floor(m / 60)}j ${m % 60}m`;
+  const pad = (n) => String(n).padStart(2, '0');
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
+  return h ? `${h}:${pad(m)}:${pad(s % 60)}` : `${m}:${pad(s % 60)}`;
 }
 
 /** A pending tool running longer than this is worth a look. */

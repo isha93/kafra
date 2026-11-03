@@ -29,7 +29,8 @@ would change that is opt-in and listed last.
 
 ## 2. Everyday awareness
 
-- [ ] macOS menu bar icon: count of agents waiting for you, native notifications
+- [x] macOS menu bar icon via SwiftBar: count of agents waiting for you, native notifications
+- [ ] Native SwiftUI menu bar app (no SwiftBar needed)
 - [ ] Start on login
 - [ ] Install with `npx` or Homebrew
 

@@ -206,8 +206,20 @@ function render(data) {
     fitWorld();
     cam.fly.t = 1;
     select({ type: 'town', id: data.towns[0].id });
+    // A link like #agent=<id> (from the menu bar) jumps straight to that agent.
+    followHash();
   }
 }
+
+/** #agent=<id> or #town=<id> in the URL: select it and fly there. */
+function followHash() {
+  const m = location.hash.match(/^#(agent|town)=(.+)$/);
+  if (!m) return;
+  const sel = { type: m[1], id: decodeURIComponent(m[2]) };
+  // Agents need their sprite placed before the camera can find them.
+  requestAnimationFrame(() => { select(sel); focus(sel); });
+}
+window.addEventListener('hashchange', followHash);
 
 /** Where the selected agent is on the map, or null. */
 function selectedAgentPoint() {

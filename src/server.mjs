@@ -6,6 +6,7 @@ import { listSessions, PROJECTS_DIR } from './sources/claude-code.mjs';
 import { buildWorld } from './world.mjs';
 import { allowedHost, allowedOrigin, SECURITY_HEADERS } from './guard.mjs';
 import { loadConfig, visible, publicSessions, CONFIG_PATH } from './privacy.mjs';
+import { swiftbarText } from './menubar.mjs';
 
 /** The party window's sessions, through the same privacy rules as the world. */
 async function sessionsView() {
@@ -127,6 +128,8 @@ createServer(async (req, res) => {
     return send(res, 200, 'application/json', JSON.stringify(await buildWorld()));
   }
   if (path === '/api/world/stream') return stream(res, buildWorld);
+  // Plain text for the SwiftBar plugin (integrations/swiftbar); same privacy rules as the city.
+  if (path === '/api/swiftbar') return send(res, 200, 'text/plain; charset=utf-8', swiftbarText(await buildWorld(), { port: PORT }));
   if (path === '/vendor/pixi.mjs') {
     shim ??= pixiShim().catch(() => null);
     const body = await shim;

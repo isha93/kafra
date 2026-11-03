@@ -14,6 +14,7 @@ working directory.
 ./kafra.sh demo       # sample town with every animation                    → :4318
 ./kafra.sh simulate   # six fake towns that keep working                    → :4319
 ./kafra.sh public     # your world with all text removed, safe to share     → :4317
+./kafra.sh menubar    # macOS menu bar icon (via SwiftBar)
 ./kafra.sh help
 ```
 
@@ -138,6 +139,16 @@ so without this an agent would look like it is "casting" almost all the time.
   a count of waiting agents in the tab title.
 - **The world map.** Zoomed out, each town becomes a pin coloured by its most
   urgent agent.
+- **Menu bar (macOS).** Run `./kafra.sh menubar` to install a
+  [SwiftBar](https://swiftbar.app) plugin (install SwiftBar first with
+  `brew install --cask swiftbar`).
+  - `⚔ 2` in yellow means two agents are waiting for you. The dropdown lists
+    every awake agent, and clicking one opens Kafra on that agent
+    (`#agent=<id>`).
+  - A native macOS notification appears once per agent that starts waiting,
+    even with the browser closed.
+  - The plugin is a few lines of `curl` to `127.0.0.1`. The formatting lives in
+    `src/menubar.mjs` and follows the same privacy rules as the city.
 - **Sound and music** (both off until you click 🔈 / 🎵 on the party bar). All
   of it is synthesised in the browser, with no audio files and nothing
   fetched:
