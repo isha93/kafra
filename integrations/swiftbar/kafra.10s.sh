@@ -17,8 +17,10 @@ out=$(curl -fs --max-time 3 "http://127.0.0.1:$PORT/api/swiftbar")
 if [[ -z "$out" ]]; then
   echo "⚔ | color=#8a8a8a"
   echo "---"
-  echo "Kafra belum jalan"
-  echo "Buka Kafra… | bash=$KAFRA_DIR/kafra.sh terminal=true"
+  case "${KAFRA_LANG:-${LANG:-}}" in
+    id*) echo "Kafra belum jalan"; echo "Buka Kafra… | bash=$KAFRA_DIR/kafra.sh terminal=true" ;;
+    *) echo "Kafra isn't running"; echo "Start Kafra… | bash=$KAFRA_DIR/kafra.sh terminal=true" ;;
+  esac
   exit 0
 fi
 

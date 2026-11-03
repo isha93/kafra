@@ -15,6 +15,10 @@ import { skyAt, isStormy } from './sky.js';
 import { bindStage, setMusicMood } from './audio.js';
 import { replay } from './replay.js';
 import { renderNewspaper } from './newspaper.js';
+import { t, initBrowserLang, adoptServerLang, applyStatic, setLang, lang, locale } from './i18n.js';
+
+initBrowserLang();
+applyStatic();
 
 TextureSource.defaultOptions.scaleMode = 'nearest';
 
@@ -329,10 +333,10 @@ replay.bind({
     replay.rendered = false;
     news.hidden = true;
     resetWorld();
-    ui.logSystem('Kembali ke waktu sekarang.');
+    ui.logSystem(t('log.live'));
     if (liveSnapshot) render(liveSnapshot);
   },
-  onLoad: (data) => { replay.rendered = false; ui.logSystem(`Replay ${new Date(data.from).toLocaleDateString('id-ID')} dimuat.`); },
+  onLoad: (data) => { replay.rendered = false; ui.logSystem(t('log.replay', { date: new Date(data.from).toLocaleDateString(locale()) })); },
   onNews: openNews,
 });
 document.getElementById('replay-open').onclick = () => (replay.active ? replay.close() : replay.open());
@@ -343,14 +347,36 @@ document.getElementById('news-open').onclick = async () => {
 app.ticker.add((ticker) => replay.tick(Math.min(0.1, ticker.deltaMS / 1000)));
 
 const source = new EventSource('/api/world/stream');
-source.onopen = () => ui.logSystem('Terhubung ke Kafra. Memantau semua adventurer (read-only).');
+source.onopen = () => ui.logSystem(t('log.connected'));
 source.onmessage = (e) => {
-  ui.setStatus('live', true);
+  ui.setStatus(t('conn.live'), true);
   liveSnapshot = JSON.parse(e.data);
+  // Follow the server's language (your Mac's) unless this browser chose one.
+  if (adoptServerLang(liveSnapshot.lang)) relabel();
   // While replaying, the live world waits in the wings.
   if (!replay.active) render(liveSnapshot);
 };
-source.onerror = () => ui.setStatus('terputus — mencoba lagi', false);
+source.onerror = () => ui.setStatus(t('conn.lost'), false);
+
+/**
+ * Switch language: static labels, toggles, and the towns (their signboards
+ * are drawn into the canvas) are rebuilt; panels re-render on the next update.
+ */
+function relabel() {
+  applyStatic();
+  ui.repaintStatic();
+  document.getElementById('lang').textContent = lang() === 'id' ? '🌐 EN' : '🌐 ID';
+  resetWorld();
+  const current = replay.active ? null : liveSnapshot;
+  if (current) render(current);
+  else if (replay.active) replay.seek(replay.t);
+  if (!news.hidden && replay.data) openNews(replay.data);
+}
+document.getElementById('lang').onclick = () => {
+  setLang(lang() === 'id' ? 'en' : 'id', { remember: true });
+  relabel();
+};
+document.getElementById('lang').textContent = lang() === 'id' ? '🌐 EN' : '🌐 ID';
 
 ui.bindKeys({
   focus: (sel) => { if (!sel && replay.active && !news.hidden) { news.hidden = true; return; } select(sel); focus(sel); },

@@ -56,7 +56,7 @@ export async function loadArt() {
   for (const [cls, entry] of Object.entries(manifest.characters ?? {})) {
     jobs.push(loadSheet(entry.sheet).then(
       (sheet) => characterSheets.set(cls, { sheet, scale: entry.scale ?? 1, anchor: entry.anchor ?? [0.5, 1] }),
-      (err) => console.warn(`kafra: sheet ${cls} gagal dimuat`, err),
+      (err) => console.warn(`kafra: could not load sheet ${cls}`, err),
     ));
   }
   for (const [section, target] of [['tiles', tileArt], ['icons', iconArt]]) {
@@ -66,7 +66,7 @@ export async function loadArt() {
           texture.source.scaleMode = 'nearest';
           target.set(key, { texture, url: BASE + entry.image });
         },
-        (err) => console.warn(`kafra: gambar ${key} gagal dimuat`, err),
+        (err) => console.warn(`kafra: could not load image ${key}`, err),
       ));
     }
   }
@@ -77,7 +77,7 @@ export async function loadArt() {
           texture.source.scaleMode = 'nearest';
           target.set(key, { texture, scale: entry.scale ?? 1, anchor: entry.anchor ?? [0.5, 1] });
         },
-        (err) => console.warn(`kafra: gambar ${key} gagal dimuat`, err),
+        (err) => console.warn(`kafra: could not load image ${key}`, err),
       ));
     }
   }

@@ -34,12 +34,13 @@ export const DISTRICT_SLOTS = [
 ];
 
 export const CIVIC = {
-  library: { x: 2, y: 2, label: 'Perpustakaan' },
-  workshop: { x: 18, y: 2, label: 'Bengkel' },
-  inn: { x: 2, y: 18, label: 'Penginapan' },
-  arena: { x: 18, y: 18, label: 'Arena Latihan' },
-  kafra: { x: 10, y: 10, label: 'Kafra' },
-  warp: { x: 12, y: 12, label: 'Warp Portal' },
+  // Signboard text comes from i18n (`civic.<key>`).
+  library: { x: 2, y: 2 },
+  workshop: { x: 18, y: 2 },
+  inn: { x: 2, y: 18 },
+  arena: { x: 18, y: 18 },
+  kafra: { x: 10, y: 10 },
+  warp: { x: 12, y: 12 },
 };
 
 /**

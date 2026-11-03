@@ -1,0 +1,49 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Read-only: CI checks code, it never writes to the repo.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ${{ matrix.os }} · Node ${{ matrix.node }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [20, 22, 24]
+    steps:
+      # Actions are pinned to commit SHAs so a moved tag can't change what runs.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Shell scripts parse
+        run: |
+          bash -n kafra.sh
+          bash -n integrations/swiftbar/kafra.10s.sh
+          bash -n integrations/notifier/build.sh
+
+      - name: Unit tests (no dependencies to install)
+        run: node --test tests/*.test.mjs
+
+      - name: Setup check
+        run: ./kafra.sh setup
+
+      - name: Smoke test the server
+        run: |
+          KAFRA_NO_OPEN=1 KAFRA_PORT=4317 node src/server.mjs &
+          for i in $(seq 1 30); do curl -fs http://127.0.0.1:4317/ >/dev/null && break; sleep 0.5; done
+          curl -fsS http://127.0.0.1:4317/ | grep -q 'Kafra City'
+          curl -fsS http://127.0.0.1:4317/api/world | grep -q '"towns"'
+          curl -fsS http://127.0.0.1:4317/vendor/pixi.js >/dev/null
+          # The guards: a rebinding Host and a cross-site request must both be refused.
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Host: evil.example:4317' http://127.0.0.1:4317/api/world)" = 421
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Sec-Fetch-Site: cross-site' http://127.0.0.1:4317/api/world)" = 403

@@ -21,6 +21,7 @@ import { drawGround, drawWalls, moodTint, CASTLE } from './land.js';
 import { isStormy } from './sky.js';
 import { LONG_RUN_MS, LOW_HP } from './status.js';
 import { sfxAt } from './audio.js';
+import { t, districtName } from './i18n.js';
 
 /**
  * Real art for a building key when web/assets has it, else the drawn fallback.
@@ -38,7 +39,7 @@ function artOr(key, fallback) {
 /** "owner/name", or whichever half exists (public mode blanks the name). */
 export const repoLabel = (t) => [t.owner, t.name].filter(Boolean).join('/');
 /** A folder gets a trailing slash; the root and public mode's numbered districts don't. */
-export const districtLabel = (name) => (name === '(root)' ? 'Balai Kota' : name.startsWith('Distrik') ? name : `${name}/`);
+export const districtLabel = districtName;
 
 /** What a town's look is built from; when this changes the town is rebuilt from scratch. */
 export const growthKey = (t) => `${t.tier?.id}|${t.biome?.id}|${t.mood}`;
@@ -149,7 +150,8 @@ export class Town {
       return obj;
     };
     const civic = (key, g) => {
-      const { x, y, label: text } = CIVIC[key];
+      const { x, y } = CIVIC[key];
+      const text = t(`civic.${key}`);
       this.put(clickable(g, { type: 'civic', town: this.id, key }), x, y);
       const sign = signboard(text);
       this.put(sign, x + 1.2, y + 1.2, 40);
@@ -184,7 +186,8 @@ export class Town {
     const top = iso(-1.5, -1.5);
     const stars = '★'.repeat(data.tier?.stars ?? 1) + '☆'.repeat(5 - (data.tier?.stars ?? 1));
     const name = label(`${data.town}`, { size: 20 });
-    const rank = label(`${stars}  ${data.tier?.name ?? ''} · ${data.biome?.name ?? ''}${data.mood === 'abandoned' ? ' · terbengkalai' : data.mood === 'bustling' ? ' · ramai' : ''}`, {
+    const mood = data.mood === 'abandoned' || data.mood === 'bustling' ? ` · ${t(`mood.short.${data.mood}`)}` : '';
+    const rank = label(`${stars}  ${data.tier?.name ?? ''} · ${t(`biome.${data.biome?.id ?? 'plains'}`)}${mood}`, {
       size: 10, color: 0xffd54f,
     });
     rank.position.set(top.x, top.y - 98);

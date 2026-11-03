@@ -18,6 +18,8 @@ would change that is opt-in and listed last.
 - Agents: Claude Code, Codex, Gemini CLI
 - Replay of any day, and the daily Kafra newspaper
 - Menu bar (SwiftBar), native notifications, autostart at login
+- English and Indonesian UI, following the system language
+- CI on macOS and Linux with Node 20, 22 and 24
 - Privacy: `kafra.config.json` (hide / only / redact) and public mode
 - Synthesised sound: positional effects per activity, and generative
   background music per biome

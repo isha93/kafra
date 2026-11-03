@@ -11,6 +11,7 @@ import { bodyFrame, animates } from './skin.js';
 import { iconFor } from './assets.js';
 import { STATUS, statusOf } from './status.js';
 import { sfxAt } from './audio.js';
+import { t } from './i18n.js';
 
 /**
  * Ambient sound per activity, as [sound, seconds between, loudness]. Hammer
@@ -42,8 +43,8 @@ const basename = (p) => String(p ?? '').split('/').filter(Boolean).pop() ?? '';
 /** What the speech bubble says, without its icon; null means no bubble. */
 function bubbleText(a) {
   if (a.status !== 'active' && a.kind !== 'waiting' && a.kind !== 'ask') return null;
-  if (a.kind === 'waiting') return 'Giliranmu!';
-  if (a.kind === 'cast') return 'berpikir…';
+  if (a.kind === 'waiting') return t('bubble.waiting');
+  if (a.kind === 'cast') return t('bubble.thinking');
   const target = a.file ? basename(a.file) : a.tool?.label;
   return target ? target.slice(0, 34) : '';
 }

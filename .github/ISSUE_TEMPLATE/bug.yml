@@ -1,0 +1,22 @@
+name: Bug
+description: Something in Kafra is broken
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: OS, browser and Node version
+      placeholder: "macOS 15 · Chrome 140 · Node 22"
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Server output or browser console (optional)
+      description: Use `./kafra.sh public` or check that nothing private is in it before pasting.
+      render: text

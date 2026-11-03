@@ -9,6 +9,7 @@ import { iconFor, characterSheets } from './assets.js';
 import { repoLabel, districtLabel } from './town.js';
 import { STATUS, statusOf, since, duration } from './status.js';
 import { sfx, setSfx, setMusic } from './audio.js';
+import { t, locale, districtName, kingdomName } from './i18n.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -29,25 +30,24 @@ export function esc(v) {
   return String(v ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
 
-const KIND_LABEL = {
-  build: 'membangun', research: 'meneliti', craft: 'meracik', trial: 'uji coba',
-  deliver: 'menyetor ke Kafra', teleport: 'teleport', summon: 'memanggil party',
-  ask: 'bertanya padamu', cast: 'casting', waiting: 'menunggu giliranmu',
-  idle: 'idle', resting: 'istirahat',
-};
+const kindLabel = (k) => t(`kind.${k}`);
+/** A subagent that finished hands back to its leader, not to you: show it as idle. */
+const agentKind = (a) => (a.isParty && (a.kind === 'waiting' || a.kind === 'ask') ? 'idle' : a.kind);
 const KIND_ICON = {
   build: '⚒', research: '📖', craft: '⚗', trial: '⚔', deliver: '📦', teleport: '✦',
   summon: '✧', ask: '?', cast: '✶', waiting: '!', idle: '·', resting: 'z',
 };
 
+/** "5 min ago", in the current language. */
 function ago(ms) {
   const s = Math.round(ms / 1000);
-  if (s < 60) return `${s} dtk`;
+  if (s < 60) return t('ago.s', { n: s });
   const m = Math.round(s / 60);
-  if (m < 60) return `${m} mnt`;
+  if (m < 60) return t('ago.m', { n: m });
   const h = Math.round(m / 60);
-  return h < 48 ? `${h} jam` : `${Math.round(h / 24)} hari`;
+  return h < 48 ? t('ago.h', { n: h }) : t('ago.d', { n: Math.round(h / 24) });
 }
+const num = (n) => Number(n ?? 0).toLocaleString(locale());
 
 function hpBar(hp) {
   const cls = hp <= 20 ? 'low' : hp <= 50 ? 'mid' : '';
@@ -69,36 +69,36 @@ export function renderTowns(data, selection, pick) {
   const selTown = selection?.type === 'town' ? selection.id : selection?.town;
   // Grouped by kingdom (GitHub owner), in the order towns arrive: busiest first.
   const kingdoms = new Map();
-  for (const t of data.towns) {
-    const k = t.owner || 'Tanah Liar';
+  for (const town of data.towns) {
+    const k = kingdomName(town.owner);
     if (!kingdoms.has(k)) kingdoms.set(k, []);
-    kingdoms.get(k).push(t);
+    kingdoms.get(k).push(town);
   }
-  el.innerHTML = [...kingdoms].map(([k, list]) => `<div class="kingdom">${esc(k)}</div>` + list.map((t) => `
-    <button class="town ${t.id === selTown ? 'sel' : ''}" data-id="${esc(t.id)}">
-      <span class="dot ${t.active ? 'on' : ''}"></span>
-      <span class="tn">${esc(t.town)} <span class="stars" title="${esc(t.tier?.name ?? '')}">${'★'.repeat(t.tier?.stars ?? 1)}</span></span>
-      <span class="tr">${esc(t.name)}</span>
-      <span class="tc">${t.agents.length}</span>
-    </button>`).join('')).join('') || '<div class="empty">Belum ada adventurer.</div>';
+  el.innerHTML = [...kingdoms].map(([k, list]) => `<div class="kingdom">${esc(k)}</div>` + list.map((tw) => `
+    <button class="town ${tw.id === selTown ? 'sel' : ''}" data-id="${esc(tw.id)}">
+      <span class="dot ${tw.active ? 'on' : ''}"></span>
+      <span class="tn">${esc(tw.town)} <span class="stars" title="${esc(tw.tier?.name ?? '')}">${'★'.repeat(tw.tier?.stars ?? 1)}</span></span>
+      <span class="tr">${esc(tw.name || t('no.repo'))}</span>
+      <span class="tc">${tw.agents.length}</span>
+    </button>`).join('')).join('') || `<div class="empty">${esc(t('towns.empty'))}</div>`;
   el.onclick = (e) => {
     const b = e.target.closest('.town');
     if (b) pick({ type: 'town', id: b.dataset.id });
   };
   // Say so when the view is filtered: nobody should mistake public mode for "no data".
-  $('mode').textContent = data.public ? '🔒 publik' : data.configError ? '⚠ config' : '';
-  $('mode').title = data.configError ?? (data.public ? 'Semua teks disembunyikan oleh server' : '');
-  const active = data.towns.reduce((n, t) => n + t.active, 0);
-  const total = data.towns.reduce((n, t) => n + t.agents.length, 0);
-  $('census').textContent = `${active} aktif · ${total} adventurer · ${data.towns.length} kota`;
+  $('mode').textContent = data.public ? t('mode.public') : data.configError ? '⚠ config' : '';
+  $('mode').title = data.configError ?? (data.public ? t('mode.public.title') : '');
+  const active = data.towns.reduce((n, tw) => n + tw.active, 0);
+  const total = data.towns.reduce((n, tw) => n + tw.agents.length, 0);
+  $('census').textContent = t('census', { active, total, towns: data.towns.length });
 }
 
 /* ── Kafra info window ──────────────────────────────────────────────────── */
 
 function findAgent(snapshot, id) {
-  for (const t of snapshot.towns) {
-    const a = t.agents.find((x) => x.id === id);
-    if (a) return { town: t, agent: a };
+  for (const town of snapshot.towns) {
+    const a = town.agents.find((x) => x.id === id);
+    if (a) return { town, agent: a };
   }
   return null;
 }
@@ -106,117 +106,109 @@ function findAgent(snapshot, id) {
 function agentDetail({ town, agent: a }) {
   const party = town.agents.filter((x) => x.leader === a.id);
   const leader = a.leader && town.agents.find((x) => x.id === a.leader);
-  const doing = KIND_LABEL[a.kind] ?? a.kind;
+  const doing = kindLabel(agentKind(a));
   const where = a.file ? `<code>${esc(a.file)}</code>` : a.tool?.label ? esc(a.tool.label) : '';
   return `
     <div class="who">
       <div><b>${esc(a.isParty ? a.agentType : a.job)}</b> <span class="muted">${esc(a.sourceName ?? '')} · ${esc(a.model)}</span></div>
       <div class="muted">${esc(town.town)} · ${esc(town.name)}${a.branch ? ` · ⎇ ${esc(a.branch)}` : ''}</div>
     </div>
-    ${a.title ? `<div class="quest"><span class="lbl">Quest</span>${esc(a.title)}</div>` : ''}
-    <div class="stat"><span class="lbl">HP</span>${hpBar(a.hp)} <span class="muted">${a.hp}% · ${a.tokens.toLocaleString('id-ID')} tok</span></div>
-    <div class="stat"><span class="lbl">Sedang</span><span class="kind k-${a.kind}">${icon(a.kind)} ${esc(doing)}</span> ${where}</div>
-    <div class="stat"><span class="lbl">Terakhir</span><span class="muted">${ago(a.ageMs)} lalu</span></div>
-    ${leader ? `<div class="stat"><span class="lbl">Leader</span><a href="#" data-agent="${esc(leader.id)}">${esc(leader.job)}</a></div>` : ''}
-    ${party.length ? `<div class="sub">Party</div><ul class="party">${party.map((p) => `
-      <li><a href="#" data-agent="${esc(p.id)}">${esc(p.agentType)}</a> — ${esc(p.title)} <span class="muted">(${esc(KIND_LABEL[p.kind] ?? p.kind)})</span></li>`).join('')}</ul>` : ''}
-    ${a.quest ? `<div class="sub">Perintah terakhir</div><p class="say">${esc(a.quest)}</p>` : ''}
-    ${a.preview ? `<div class="sub">Ucapan terakhir</div><p class="say">${esc(a.preview)}</p>` : ''}
-    <div class="sub">Aktivitas</div>
+    ${a.title ? `<div class="quest"><span class="lbl">${t('lbl.quest')}</span>${esc(a.title)}</div>` : ''}
+    <div class="stat"><span class="lbl">${t('lbl.hp')}</span>${hpBar(a.hp)} <span class="muted">${a.hp}% · ${num(a.tokens)} tok</span></div>
+    <div class="stat"><span class="lbl">${t('lbl.doing')}</span><span class="kind k-${a.kind}">${icon(a.kind)} ${esc(doing)}</span> ${where}</div>
+    <div class="stat"><span class="lbl">${t('lbl.last')}</span><span class="muted">${ago(a.ageMs)}</span></div>
+    ${leader ? `<div class="stat"><span class="lbl">${t('lbl.leader')}</span><a href="#" data-agent="${esc(leader.id)}">${esc(leader.job)}</a></div>` : ''}
+    ${party.length ? `<div class="sub">${t('sub.party')}</div><ul class="party">${party.map((p) => `
+      <li><a href="#" data-agent="${esc(p.id)}">${esc(p.agentType)}</a> — ${esc(p.title)} <span class="muted">(${esc(kindLabel(agentKind(p)))})</span></li>`).join('')}</ul>` : ''}
+    ${a.quest ? `<div class="sub">${t('sub.prompt')}</div><p class="say">${esc(a.quest)}</p>` : ''}
+    ${a.preview ? `<div class="sub">${t('sub.reply')}</div><p class="say">${esc(a.preview)}</p>` : ''}
+    <div class="sub">${t('sub.activity')}</div>
     <ul class="tools">${(a.tools ?? []).map(toolLine).join('') || '<li class="muted">—</li>'}</ul>`;
 }
 
 function commitList(commits) {
-  if (!commits.length) return '<p class="muted">Belum ada commit minggu ini.</p>';
+  if (!commits.length) return `<p class="muted">${t('commits.none')}</p>`;
   return `<ul class="commits">${commits.slice(0, 15).map((c) => `
     <li><code>${esc(c.hash)}</code> ${esc(c.subject)}
-      <span class="muted">+${c.added} −${c.removed} · ${ago(Date.now() - c.at)} lalu</span></li>`).join('')}</ul>`;
+      <span class="muted">+${c.added} −${c.removed} · ${ago(now() - c.at)}</span></li>`).join('')}</ul>`;
 }
 
-const MOOD = { bustling: 'ramai', steady: 'tenang', abandoned: 'terbengkalai — tidak ada commit 30 hari' };
-
 /** What the town needs to reach the next tier, as small progress bars. */
-function growthLine(t) {
-  const g = t.growth, next = t.tier?.next;
+function growthLine(town) {
+  const g = town.growth, next = town.tier?.next;
   if (!g) return '';
-  if (!next) return `<div class="stat"><span class="lbl">Sejarah</span>${g.files.toLocaleString('id-ID')} file · ${g.commitsTotal} commit</div>`;
+  if (!next) return `<div class="stat"><span class="lbl">${t('lbl.history')}</span>${t('history', { files: num(g.files), commits: num(g.commitsTotal) })}</div>`;
   const bar = (have, need) => `<span class="hp"><i style="width:${Math.min(100, (have / need) * 100)}%"></i></span>`;
   const ageDays = g.firstCommitAt ? Math.floor((Date.now() - g.firstCommitAt) / 86_400_000) : 0;
   return `
-    <div class="sub">Menuju ${esc(next.name)}</div>
-    <div class="stat grow"><span class="lbl">File</span>${bar(g.files, next.files)} <span class="muted">${g.files.toLocaleString('id-ID')} / ${next.files}</span></div>
-    <div class="stat grow"><span class="lbl">Commit</span>${bar(g.commitsTotal, next.commits)} <span class="muted">${g.commitsTotal} / ${next.commits}</span></div>
-    ${next.days ? `<div class="stat grow"><span class="lbl">Umur</span>${bar(ageDays, next.days)} <span class="muted">${ageDays} / ${next.days} hari</span></div>` : ''}`;
+    <div class="sub">${t('sub.next', { tier: esc(next.name) })}</div>
+    <div class="stat grow"><span class="lbl">${t('lbl.file')}</span>${bar(g.files, next.files)} <span class="muted">${num(g.files)} / ${num(next.files)}</span></div>
+    <div class="stat grow"><span class="lbl">${t('lbl.commit')}</span>${bar(g.commitsTotal, next.commits)} <span class="muted">${g.commitsTotal} / ${next.commits}</span></div>
+    ${next.days ? `<div class="stat grow"><span class="lbl">${t('lbl.age')}</span>${bar(ageDays, next.days)} <span class="muted">${ageDays} / ${t('days', { n: next.days })}</span></div>` : ''}`;
 }
 
-function townDetail(t) {
-  const busy = t.agents.filter((a) => a.status === 'active');
+function townDetail(town) {
+  const busy = town.agents.filter((a) => a.status === 'active');
   return `
     <div class="who">
-      <div><b>${esc(t.town)}</b></div>
-      <div class="muted">${esc(repoLabel(t))}${t.branch ? ` · ⎇ ${esc(t.branch)}` : ''}</div>
+      <div><b>${esc(town.town)}</b></div>
+      <div class="muted">${esc(repoLabel(town))}${town.branch ? ` · ⎇ ${esc(town.branch)}` : ''}</div>
     </div>
-    <div class="kafra-say">“Selamat datang di Kafra! Ini catatan pembangunan kota ${esc(t.town)}.”</div>
-    <div class="stat"><span class="lbl">Tingkat</span><b>${'★'.repeat(t.tier?.stars ?? 1)}${'☆'.repeat(5 - (t.tier?.stars ?? 1))} ${esc(t.tier?.name ?? '')}</b>
-      <span class="muted">${esc(MOOD[t.mood] ?? '')}</span></div>
-    ${growthLine(t)}
-    <div class="stat"><span class="lbl">Wilayah</span>${esc(t.biome?.name ?? '')} <span class="muted">(${esc(t.biome?.languages ?? '')})</span></div>
-    <div class="stat"><span class="lbl">Warga</span>${t.agents.length} adventurer, ${busy.length} sedang bekerja</div>
-    <div class="stat"><span class="lbl">Bangunan</span>${t.totals.files.toLocaleString('id-ID')} file · ${t.totals.dirty} belum di-commit</div>
-    <div class="sub">Adventurer</div>
-    <ul class="party">${t.agents.map((a) => `
+    <div class="kafra-say">${esc(t('kafra.welcome', { town: town.town }))}</div>
+    <div class="stat"><span class="lbl">${t('lbl.tier')}</span><b>${'★'.repeat(town.tier?.stars ?? 1)}${'☆'.repeat(5 - (town.tier?.stars ?? 1))} ${esc(town.tier?.name ?? '')}</b>
+      <span class="muted">${esc(t(`mood.${town.mood}`))}</span></div>
+    ${growthLine(town)}
+    <div class="stat"><span class="lbl">${t('lbl.region')}</span>${esc(t(`biome.${town.biome?.id ?? 'plains'}`))} <span class="muted">(${esc(town.biome?.languages ?? '')})</span></div>
+    <div class="stat"><span class="lbl">${t('lbl.folk')}</span>${t('folk', { n: town.agents.length, busy: busy.length })}</div>
+    <div class="stat"><span class="lbl">${t('lbl.buildings')}</span>${t('buildings', { files: num(town.totals.files), dirty: town.totals.dirty })}</div>
+    <div class="sub">${t('sub.adventurers')}</div>
+    <ul class="party">${town.agents.map((a) => `
       <li><a href="#" data-agent="${esc(a.id)}">${esc(a.isParty ? a.agentType : a.job)}</a>
-      <span class="kind k-${a.kind}">${icon(a.kind)} ${esc(KIND_LABEL[a.kind] ?? a.kind)}</span>
+      <span class="kind k-${agentKind(a)}">${icon(agentKind(a))} ${esc(kindLabel(agentKind(a)))}</span>
       <span class="muted">${esc((a.title || '').slice(0, 40))}</span></li>`).join('')}</ul>
-    <div class="sub">Distrik</div>
-    <ul class="districts">${t.districts.map((d) => `
+    <div class="sub">${t('sub.districts')}</div>
+    <ul class="districts">${town.districts.map((d) => `
       <li><a href="#" data-district="${esc(d.name)}">${esc(districtLabel(d.name))}</a>
-      <span class="muted">${d.files} file${d.dirty ? ` · 🚧 ${d.dirty}` : ''}${d.churn ? ` · ${d.churn} baris/minggu` : ''}</span></li>`).join('')}</ul>
-    <div class="sub">Build log (7 hari)</div>
-    ${commitList(t.commits)}
-    ${t.error ? `<p class="bad">${esc(t.error)}</p>` : ''}`;
+      <span class="muted">${t('district.files', { n: d.files })}${d.dirty ? ` · 🚧 ${d.dirty}` : ''}${d.churn ? ` · ${t('lines.week', { n: d.churn })}` : ''}</span></li>`).join('')}</ul>
+    <div class="sub">${t('sub.buildlog')}</div>
+    ${commitList(town.commits)}
+    ${town.error ? `<p class="bad">${esc(town.error)}</p>` : ''}`;
 }
 
-function districtDetail(t, name) {
-  const d = t.districts.find((x) => x.name === name);
-  if (!d) return townDetail(t);
-  const builders = t.agents.filter((a) => a.building === name && a.kind === 'build');
-  const visited = t.agents.filter((a) => a.touched?.includes(name));
-  const commits = t.commits.filter((c) => c.districts.includes(name));
+function districtDetail(town, name) {
+  const d = town.districts.find((x) => x.name === name);
+  if (!d) return townDetail(town);
+  const builders = town.agents.filter((a) => a.building === name && a.kind === 'build');
+  const visited = town.agents.filter((a) => a.touched?.includes(name));
+  const commits = town.commits.filter((c) => c.districts.includes(name));
   return `
     <div class="who">
       <div><b>${esc(districtLabel(name))}</b></div>
-      <div class="muted">${esc(t.town)} · ${esc(t.name)}</div>
+      <div class="muted">${esc(town.town)} · ${esc(town.name)}</div>
     </div>
-    <div class="stat"><span class="lbl">Ukuran</span>${d.files} file</div>
-    <div class="stat"><span class="lbl">Konstruksi</span>${d.dirty ? `🚧 ${d.dirty} file belum di-commit` : 'tidak ada'}</div>
-    <div class="stat"><span class="lbl">Minggu ini</span>${d.commits} commit · ${d.churn} baris</div>
-    ${builders.length ? `<div class="sub">Sedang dibangun oleh</div><ul class="party">${builders.map((a) => `
+    <div class="stat"><span class="lbl">${t('lbl.size')}</span>${t('district.files', { n: d.files })}</div>
+    <div class="stat"><span class="lbl">${t('lbl.construction')}</span>${d.dirty ? t('construction.n', { n: d.dirty }) : t('none')}</div>
+    <div class="stat"><span class="lbl">${t('lbl.week')}</span>${t('week', { c: d.commits, l: d.churn })}</div>
+    ${builders.length ? `<div class="sub">${t('sub.builders')}</div><ul class="party">${builders.map((a) => `
       <li><a href="#" data-agent="${esc(a.id)}">${esc(a.job)}</a> <code>${esc(a.file ?? '')}</code></li>`).join('')}</ul>` : ''}
-    ${visited.length ? `<div class="sub">Pernah dikerjakan</div><ul class="party">${visited.map((a) => `
+    ${visited.length ? `<div class="sub">${t('sub.visited')}</div><ul class="party">${visited.map((a) => `
       <li><a href="#" data-agent="${esc(a.id)}">${esc(a.isParty ? a.agentType : a.job)}</a> <span class="muted">${esc((a.title || '').slice(0, 40))}</span></li>`).join('')}</ul>` : ''}
-    <div class="sub">Commit</div>
+    <div class="sub">${t('sub.commits')}</div>
     ${commitList(commits)}`;
 }
 
-const CIVIC_TEXT = {
-  library: ['Perpustakaan', 'research', 'Agent yang membaca file atau mencari kode (Read, Grep, Glob) datang ke sini.'],
-  workshop: ['Bengkel', 'craft', 'Agent yang menjalankan perintah shell meracik di sini. Cerobong berasap lebih tebal saat ada yang bekerja.'],
-  inn: ['Penginapan', 'resting', 'Sesi yang sudah lebih dari 30 menit diam beristirahat di sini.'],
-  arena: ['Arena Latihan', 'trial', 'Menjalankan test. Angka damage itu hiasan; "Miss" merah berarti tool-nya gagal.'],
-  kafra: ['Kafra', 'deliver', 'Commit dan push disetor ke sini. Setiap commit baru memicu kembang api.'],
-};
+/** Which activity each civic building hosts. */
+const CIVIC_KIND = { library: 'research', workshop: 'craft', inn: 'resting', arena: 'trial', kafra: 'deliver' };
 
-function civicDetail(t, key) {
-  const [title, kind, text] = CIVIC_TEXT[key] ?? [key, '', ''];
-  if (key === 'kafra') return townDetail(t);
-  const here = t.agents.filter((a) => a.kind === kind);
+function civicDetail(town, key) {
+  if (key === 'kafra') return townDetail(town);
+  const here = town.agents.filter((a) => a.kind === CIVIC_KIND[key]);
   return `
-    <div class="who"><div><b>${esc(title)}</b></div><div class="muted">${esc(t.town)}</div></div>
-    <p class="say">${esc(text)}</p>
-    <div class="sub">Di sini sekarang</div>
+    <div class="who"><div><b>${esc(t(`civic.${key}`))}</b></div><div class="muted">${esc(town.town)}</div></div>
+    <p class="say">${esc(t(`civic.${key}.text`))}</p>
+    <div class="sub">${t('sub.here')}</div>
     <ul class="party">${here.map((a) => `<li><a href="#" data-agent="${esc(a.id)}">${esc(a.isParty ? a.agentType : a.job)}</a>
-      ${a.tool?.label ? `<span class="muted">${esc(a.tool.label)}</span>` : ''}</li>`).join('') || '<li class="muted">kosong</li>'}</ul>`;
+      ${a.tool?.label ? `<span class="muted">${esc(a.tool.label)}</span>` : ''}</li>`).join('') || `<li class="muted">${t('empty')}</li>`}</ul>`;
 }
 
 let pickHandler = () => {};
@@ -224,20 +216,20 @@ let pickHandler = () => {};
 export function showDetail(sel, snapshot) {
   const el = $('detail');
   const head = $('detail-title');
-  let html = '<p class="muted">Klik adventurer, bangunan, atau Kafra di kota untuk melihat detail.</p>';
-  head.textContent = 'Kafra Service';
+  let html = `<p class="muted">${t('detail.hint')}</p>`;
+  head.textContent = t('head.kafra');
   if (sel?.type === 'agent') {
     const found = findAgent(snapshot, sel.id);
-    if (found) { html = agentDetail(found); head.textContent = 'Status Adventurer'; }
+    if (found) { html = agentDetail(found); head.textContent = t('head.agent'); }
   } else if (sel?.type === 'town') {
-    const t = snapshot.towns.find((x) => x.id === sel.id);
-    if (t) html = townDetail(t);
+    const town = snapshot.towns.find((x) => x.id === sel.id);
+    if (town) html = townDetail(town);
   } else if (sel?.type === 'district') {
-    const t = snapshot.towns.find((x) => x.id === sel.town);
-    if (t) { html = districtDetail(t, sel.name); head.textContent = 'Bangunan'; }
+    const town = snapshot.towns.find((x) => x.id === sel.town);
+    if (town) { html = districtDetail(town, sel.name); head.textContent = t('head.building'); }
   } else if (sel?.type === 'civic') {
-    const t = snapshot.towns.find((x) => x.id === sel.town);
-    if (t) html = civicDetail(t, sel.key);
+    const town = snapshot.towns.find((x) => x.id === sel.town);
+    if (town) html = civicDetail(town, sel.key);
   }
   // Skip identical re-renders so a text selection survives the 2s poll.
   if (el.dataset.html !== html) {
@@ -268,30 +260,29 @@ export function logEvent(ev, pick) {
   let cls = '';
   switch (ev.type) {
     case 'tool': {
-      const t = ev.tool;
-      const target = t.file ? basename(t.file) : t.label ?? '';
-      text = `${who} ${KIND_LABEL[t.kind] ?? t.kind}: ${target}`;
-      cls = `k-${t.kind}`;
+      const tool = ev.tool;
+      text = t('log.tool', { who, kind: kindLabel(tool.kind), target: tool.file ? basename(tool.file) : tool.label ?? '' });
+      cls = `k-${tool.kind}`;
       break;
     }
     case 'error':
-      text = `${who} gagal — ${ev.tool.name} ${ev.tool.file ? basename(ev.tool.file) : ev.tool.label ?? ''}`;
+      text = t('log.error', { who, tool: `${ev.tool.name} ${ev.tool.file ? basename(ev.tool.file) : ev.tool.label ?? ''}`.trim() });
       cls = 'bad';
       break;
     case 'waiting':
-      text = `${who} menunggu giliranmu.`;
+      text = t('log.waiting', { who });
       cls = 'warn';
       break;
     case 'longrun':
-      text = `${who} sudah ${duration(Date.now() - Date.parse(ev.tool.at))} menjalankan ${ev.tool.label ?? ev.tool.name}`;
+      text = t('log.longrun', { who, d: duration(now() - Date.parse(ev.tool.at)), tool: ev.tool.label ?? ev.tool.name });
       cls = 'warn';
       break;
     case 'lowhp':
-      text = `${who} HP tinggal ${ev.agent.hp}% — context hampir penuh`;
+      text = t('log.lowhp', { who, hp: ev.agent.hp });
       cls = 'bad';
       break;
     case 'arrive':
-      text = `${who} tiba di kota.`;
+      text = t('log.arrive', { who });
       cls = 'sys';
       break;
     case 'commit':
@@ -303,7 +294,7 @@ export function logEvent(ev, pick) {
   }
   const line = document.createElement('div');
   line.className = `line ${cls}`;
-  const time = new Date(now()).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  const time = new Date(now()).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' });
   const kind = ev.type === 'tool' ? ev.tool.kind : ev.type === 'waiting' ? 'waiting' : ev.type === 'commit' ? 'deliver' : null;
   line.innerHTML = `<span class="t">${time}</span> <span class="where">[${esc(ev.town.town)}]</span> ${kind && iconFor(kind) ? icon(kind) + ' ' : ''}${esc(text)}`;
   alert(ev, text);
@@ -333,10 +324,10 @@ function portrait(a) {
 
 function memberAction(a) {
   const st = statusOf(a);
-  if (st === 'waiting') return `${icon('waiting')} ${esc(a.preview || 'menunggu giliranmu')}`;
-  if (st === 'idle') return `${icon(a.kind)} ${esc(KIND_LABEL[a.kind] ?? a.kind)}`;
+  if (st === 'waiting') return `${icon('waiting')} ${esc(a.preview || kindLabel('waiting'))}`;
+  if (st === 'idle') return `${icon(a.kind)} ${esc(kindLabel(a.kind))}`;
   const target = a.file ? basename(a.file) : a.tool?.label ?? '';
-  return `${icon(a.kind)} <b>${esc(KIND_LABEL[a.kind] ?? a.kind)}</b> ${esc(target)}`;
+  return `${icon(a.kind)} <b>${esc(kindLabel(a.kind))}</b> ${esc(target)}`;
 }
 
 /**
@@ -345,27 +336,27 @@ function memberAction(a) {
  */
 export function renderParty(snapshot, selection, pick) {
   const el = $('party');
-  const all = snapshot.towns.flatMap((t) => t.agents.map((a) => ({ a, t })));
+  const all = snapshot.towns.flatMap((town) => town.agents.map((a) => ({ a, town })));
   const awake = all.filter(({ a }) => a.status !== 'resting');
   awake.sort((x, y) => STATUS[statusOf(x.a)].rank - STATUS[statusOf(y.a)].rank || since(x.a) - since(y.a));
   const asleep = all.length - awake.length;
 
   const at = now();
-  el.innerHTML = awake.map(({ a, t }) => {
+  el.innerHTML = awake.map(({ a, town }) => {
     const st = statusOf(a);
     const sel = selection?.type === 'agent' && selection.id === a.id;
     return `
       <button class="member s-${st} ${sel ? 'sel' : ''}" data-id="${esc(a.id)}" style="--st:${STATUS[st].css}" title="${esc(a.title || '')}">
         ${portrait(a)}
         <span class="m-name">${esc(memberName(a))}${a.source && a.source !== 'claude-code' ? ` <span class="m-src">${esc(a.sourceName ?? a.source)}</span>` : ''}</span>
-        <span class="m-town">${esc(t.town)} · ${esc(t.name)}</span>
+        <span class="m-town">${esc(town.town)} · ${esc(town.name)}</span>
         <span class="m-act">${memberAction(a)}</span>
-        <span class="m-meta"><span class="m-st">${STATUS[st].label}</span>
+        <span class="m-meta"><span class="m-st">${esc(t(`status.${st}`))}</span>
           <span class="m-time" data-since="${since(a)}">${duration(at - since(a))}</span>
           ${hpBar(a.hp)}</span>
       </button>`;
-  }).join('') + (asleep ? `<span class="party-more">+${asleep} istirahat</span>` : '')
-    || '<span class="party-more">Tidak ada adventurer yang bangun.</span>';
+  }).join('') + (asleep ? `<span class="party-more">${t('party.asleep', { n: asleep })}</span>` : '')
+    || `<span class="party-more">${t('party.none')}</span>`;
 
   el.onclick = (e) => {
     const b = e.target.closest('.member');
@@ -408,13 +399,16 @@ function alert(ev, text) {
 function paintToggles() {
   const n = $('notify'), s = $('sound'), m = $('music');
   m.classList.toggle('on', prefs.music);
-  m.textContent = prefs.music ? '🎵 musik on' : '🎵 musik';
+  m.textContent = `🎵 ${t('tg.music')}${prefs.music ? ` ${t('on')}` : ''}`;
   const granted = 'Notification' in window && Notification.permission === 'granted';
   n.classList.toggle('on', prefs.notify && granted);
-  n.textContent = prefs.notify && granted ? '🔔 notifikasi on' : '🔕 notifikasi';
+  n.textContent = prefs.notify && granted ? `🔔 ${t('tg.notify')} ${t('on')}` : `🔕 ${t('tg.notify')}`;
   s.classList.toggle('on', prefs.sound);
-  s.textContent = prefs.sound ? '🔊 suara on' : '🔈 suara';
+  s.textContent = `${prefs.sound ? '🔊' : '🔈'} ${t('tg.sound')}${prefs.sound ? ` ${t('on')}` : ''}`;
 }
+
+/** Re-label everything after a language switch. */
+export function repaintStatic() { paintToggles(); }
 
 export function bindAlerts() {
   $('notify').onclick = async () => {

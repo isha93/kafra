@@ -12,12 +12,14 @@ import { label } from './art.js';
 import { seeded } from './decor.js';
 import { STATUS, statusOf } from './status.js';
 import { bodyFrame } from './skin.js';
+import { t, kingdomName } from './i18n.js';
 
 const STEP = SIZE + 12;      // tiles from one town's origin to the next inside a kingdom
 const COAST = 7;             // land margin around a kingdom's towns, in tiles
 const SEA_GAP = 16;          // open water between kingdoms
 
-export const WILDS = 'Tanah Liar';
+/** Grouping key for repos without an owner; shown as "The Wilds" / "Tanah Liar". */
+export const WILDS = '';
 
 export const kingdomOf = (t) => t.owner || WILDS;
 
@@ -131,9 +133,9 @@ export function drawWorld(layout) {
     const crest = new Graphics()
       .poly([-14, -18, 14, -18, 14, 4, 0, 16, -14, 4]).fill(crestColor(k.name)).stroke({ width: 3, color: 0xf1c40f });
     crest.poly([-6, -6, 6, -6, 6, 2, 0, 7, -6, 2]).fill(0xf5ecd7);
-    const name = label(k.name === WILDS ? WILDS : `Kerajaan ${k.name}`, { size: 28 });
+    const name = label(k.name === WILDS ? kingdomName('') : /^#\d+$/.test(k.name) ? kingdomName(k.name) : t('kingdom.of', { name: k.name }), { size: 28 });
     name.y = 22;
-    const count = label(`${k.towns.length} kota`, { size: 16, color: 0xffe08a, weight: 'normal' });
+    const count = label(t('towns.count', { n: k.towns.length }), { size: 16, color: 0xffe08a, weight: 'normal' });
     count.y = 56;
     banner.addChild(crest, name, count);
     banner.position.set(top.x, top.y - 260);

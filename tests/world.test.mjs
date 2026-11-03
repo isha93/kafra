@@ -34,7 +34,7 @@ test('one repo becomes one town', () => {
 });
 
 test('a pending Edit puts the agent at the district that owns the file', () => {
-  const a = byTitle('Bikin city view');
+  const a = byTitle('Build the city view');
   assert.equal(a.kind, 'build');
   assert.equal(a.status, 'active');
   assert.equal(a.building, 'web');
@@ -42,26 +42,26 @@ test('a pending Edit puts the agent at the district that owns the file', () => {
 });
 
 test('a finished tool keeps its kind while the model thinks', () => {
-  assert.equal(byTitle('Edit backend').kind, 'build');
+  assert.equal(byTitle('Edit the backend').kind, 'build');
 });
 
 test('a failed tool is marked as an error', () => {
-  const a = byTitle('Jalankan test');
+  const a = byTitle('Run the tests');
   assert.equal(a.kind, 'trial');
   assert.equal(a.tools[0].error, true);
 });
 
 test('an assistant turn without tools means it is your turn', () => {
-  assert.equal(byTitle('Review README').kind, 'waiting');
+  assert.equal(byTitle('Review the README').kind, 'waiting');
 });
 
 test('old sessions rest at the inn', () => {
-  assert.equal(byTitle('Sesi lama').kind, 'resting');
+  assert.equal(byTitle('An old session').kind, 'resting');
 });
 
 test('subagents join their leader as party members', () => {
   const town = world.towns[0];
-  const lead = byTitle('Audit keamanan');
+  const lead = byTitle('Security audit');
   assert.equal(lead.kind, 'summon');
   const member = town.agents.find((a) => a.leader === lead.id);
   assert.ok(member);
@@ -71,7 +71,7 @@ test('subagents join their leader as party members', () => {
 });
 
 test('HP falls as context fills', () => {
-  assert.equal(byTitle('Sesi idle').hp, 5);
+  assert.equal(byTitle('An idle session').hp, 5);
 });
 
 test('replay: the last hour has the same towns, and a timeline per agent', async () => {
@@ -85,5 +85,5 @@ test('replay: the last hour has the same towns, and a timeline per agent', async
 });
 
 test('replay refuses spans longer than two days', async () => {
-  await assert.rejects(mod.buildReplay({ from: 0, to: Date.now() }), /maks 2 hari/);
+  await assert.rejects(mod.buildReplay({ from: 0, to: Date.now() }), /at most 2 days/);
 });

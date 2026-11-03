@@ -1,6 +1,10 @@
-import { test } from 'node:test';
+import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { swiftbarText } from '../src/menubar.mjs';
+
+// The menu bar speaks the machine's language; pin it so the tests don't depend on $LANG.
+process.env.KAFRA_LANG = 'en';
+let swiftbarText;
+before(async () => { ({ swiftbarText } = await import('../src/menubar.mjs')); });
 
 const now = Date.parse('2026-11-03T12:00:00Z');
 const at = (sAgo) => new Date(now - sAgo * 1000).toISOString();
@@ -41,12 +45,12 @@ test('a notify hint per waiting agent, none for working or finished subagents', 
   // Exactly four space-separated fields, each URL-safe, so the shell can paste them.
   const [, id, body, href] = hints[0].split(' ');
   assert.equal(hints[0].split(' ').length, 4);
-  assert.match(decodeURIComponent(body), /Lord Knight di Payon menunggu giliranmu/);
+  assert.match(decodeURIComponent(body), /Lord Knight in Payon is waiting for you/);
   assert.equal(decodeURIComponent(href), 'http://127.0.0.1:4317/#agent=w1');
   for (const f of [id, body, href]) assert.doesNotMatch(f, /[\s&"'`$;|]/);
 });
 
 test('sleeping agents collapse into a count', () => {
   const text = swiftbarText(world([agent({ status: 'resting', kind: 'resting' })]), { port: 4317, now });
-  assert.match(text, /\+1 istirahat/);
+  assert.match(text, /\+1 resting/);
 });

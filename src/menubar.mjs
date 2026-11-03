@@ -12,27 +12,26 @@
  * without any quoting of its own.
  */
 import { STATUS, statusOf, since, duration } from '../web/city/status.js';
+import { makeT, serverLang } from '../web/city/i18n.js';
 
-const KIND_LABEL = {
-  build: 'membangun', research: 'meneliti', craft: 'meracik', trial: 'uji coba',
-  deliver: 'menyetor', teleport: 'teleport', summon: 'memanggil party', ask: 'bertanya',
-  cast: 'berpikir', waiting: 'menunggu giliranmu', idle: 'idle', resting: 'istirahat',
-};
-const SECTION = { waiting: '⏳ Nunggu kamu', error: '⚠️ Error', working: '⚒ Kerja', idle: '💤 Idle' };
+/** The menu bar speaks the language of the Mac it runs on (KAFRA_LANG, then LANG). */
+const t = makeT(serverLang());
+
+const SECTION = { waiting: 'mb.waiting', error: 'mb.error', working: 'mb.working', idle: 'mb.idle' };
 
 /** SwiftBar splits on "|" and newlines; keep both out of item text. */
 const clean = (s) => String(s ?? '').replace(/[|\n\r]+/g, ' ').replace(/\s+/g, ' ').trim();
 const basename = (p) => String(p ?? '').split('/').filter(Boolean).pop() ?? '';
 
 function what(a) {
-  if (statusOf(a) === 'waiting') return clean(a.preview) || 'menunggu giliranmu';
+  if (statusOf(a) === 'waiting') return clean(a.preview) || t('kind.waiting');
   const target = a.file ? basename(a.file) : a.tool?.label ?? '';
-  return clean(`${KIND_LABEL[a.kind] ?? a.kind}${target ? ` ${target}` : ''}`);
+  return clean(`${t(`kind.${a.kind}`)}${target ? ` ${target}` : ''}`);
 }
 
 export function swiftbarText(world, { port, now = Date.now() } = {}) {
   const base = `http://127.0.0.1:${port}/`;
-  const all = (world.towns ?? []).flatMap((t) => t.agents.map((a) => ({ a, t })));
+  const all = (world.towns ?? []).flatMap((town) => town.agents.map((a) => ({ a, town })));
   const awake = all.filter(({ a }) => a.status !== 'resting');
   const by = (st) => awake.filter(({ a }) => statusOf(a) === st);
   const waiting = by('waiting'), errors = by('error'), working = by('working');
@@ -45,27 +44,27 @@ export function swiftbarText(world, { port, now = Date.now() } = {}) {
   else title = '⚔ | color=#8a8a8a';
 
   const lines = [title, '---', `Kafra City | href=${base}`];
-  if (world.public) lines.push('🔒 mode publik | color=#2a4f8a');
+  if (world.public) lines.push(`${t('mb.public')} | color=#2a4f8a`);
   if (world.error) lines.push(`${clean(world.error)} | color=${STATUS.error.css}`);
 
   for (const st of ['waiting', 'error', 'working', 'idle']) {
     const list = by(st).sort((x, y) => since(x.a) - since(y.a));
     if (!list.length) continue;
-    lines.push('---', `${SECTION[st]} (${list.length}) | color=${STATUS[st].css}`);
-    for (const { a, t } of list) {
+    lines.push('---', `${t(SECTION[st])} (${list.length}) | color=${STATUS[st].css}`);
+    for (const { a, town } of list) {
       const who = a.isParty ? a.agentType ?? 'party' : a.job;
       const href = `${base}#agent=${encodeURIComponent(a.id)}`;
-      lines.push(`${clean(who)} · ${clean(t.town)} — ${what(a)} · ${duration(now - since(a))} | href=${href} length=70`);
+      lines.push(`${clean(who)} · ${clean(town.town)} — ${what(a)} · ${duration(now - since(a))} | href=${href} length=70`);
     }
   }
   const asleep = all.length - awake.length;
   lines.push('---');
-  if (asleep) lines.push(`+${asleep} istirahat | color=#8a8a8a`);
-  lines.push(`${(world.towns ?? []).length} kota | href=${base}`);
+  if (asleep) lines.push(`${t('party.asleep', { n: asleep })} | color=#8a8a8a`);
+  lines.push(`${t('towns.count', { n: (world.towns ?? []).length })} | href=${base}`);
 
   // Notification hints for the plugin: one per agent waiting for you.
-  for (const { a, t } of waiting) {
-    const body = clean(`${a.isParty ? a.agentType : a.job} di ${t.town} menunggu giliranmu`);
+  for (const { a, town } of waiting) {
+    const body = clean(t('mb.notify', { who: a.isParty ? a.agentType : a.job, town: town.town }));
     const href = `${base}#agent=${encodeURIComponent(a.id)}`;
     lines.push(`#notify ${encodeURIComponent(a.id)} ${encodeURIComponent(body)} ${encodeURIComponent(href)}`);
   }

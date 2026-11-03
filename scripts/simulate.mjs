@@ -155,7 +155,7 @@ class Agent {
 const QUESTS = {
   'guild-hall-api': [
     {
-      title: 'Tambah endpoint papan quest', prompt: 'tambahin endpoint GET /quests dengan filter rank',
+      title: 'Add a quest board endpoint', prompt: 'add GET /quests with a rank filter',
       steps: [
         ['Read', { file_path: 'src/routes/index.ts' }, 3],
         ['Grep', { pattern: 'router\\.get' }, 2],
@@ -163,42 +163,42 @@ const QUESTS = {
         ['Edit', { file_path: 'src/routes/quests.ts' }, 5, 'edit'],
         ['Edit', { file_path: 'src/db/schema.ts' }, 4, 'edit'],
         ['Write', { file_path: 'tests/quests.test.ts' }, 4, 'edit'],
-        ['Bash', { command: 'npm test', description: 'Jalankan test' }, 6],
-        ['Bash', { command: 'git commit -am "feat: quest board endpoint"', description: 'Commit endpoint quest' }, 3, 'commit'],
+        ['Bash', { command: 'npm test', description: 'Run tests' }, 6],
+        ['Bash', { command: 'git commit -am "feat: quest board endpoint"', description: 'Commit quest endpoint' }, 3, 'commit'],
       ],
-      done: 'Endpoint /quests sudah jadi, test hijau. Mau sekalian paginasi?',
+      done: 'GET /quests is done and the tests pass. Want pagination too?',
     },
     {
-      title: 'Dokumentasi API', prompt: 'update docs api biar sesuai endpoint baru',
+      title: 'API docs', prompt: 'update the API docs for the new endpoint',
       steps: [
         ['Read', { file_path: 'docs/api.md' }, 3],
         ['WebFetch', { url: 'https://spec.openapis.org/oas/latest.html' }, 5],
         ['Edit', { file_path: 'docs/api.md' }, 6, 'edit'],
         ['Edit', { file_path: 'README.md' }, 3, 'edit'],
-        ['Bash', { command: 'git commit -am "docs: quests api"', description: 'Commit dokumentasi' }, 3, 'commit'],
+        ['Bash', { command: 'git commit -am "docs: quests api"', description: 'Commit docs' }, 3, 'commit'],
       ],
-      done: 'Docs sudah update.',
+      done: 'Docs are up to date.',
     },
   ],
   'tavern-ios': [
     {
-      title: 'Perbaiki crash inventory', prompt: 'app crash pas buka inventory kosong, benerin',
+      title: 'Fix the inventory crash', prompt: 'the app crashes on an empty inventory, please fix',
       steps: [
         ['Grep', { pattern: 'items\\[0\\]' }, 2],
         ['Read', { file_path: 'Features/Inventory/InventoryStore.swift' }, 3],
         ['Read', { file_path: 'Features/Inventory/InventoryView.swift' }, 3],
         ['Edit', { file_path: 'Features/Inventory/InventoryStore.swift' }, 5, 'edit'],
-        ['Bash', { command: 'xcodebuild -scheme Tavern test', description: 'Jalankan unit test' }, 7, 'fail'],
+        ['Bash', { command: 'xcodebuild -scheme Tavern test', description: 'Run unit tests' }, 7, 'fail'],
         ['Read', { file_path: 'Tests/InventoryTests.swift' }, 3],
         ['Edit', { file_path: 'Tests/InventoryTests.swift' }, 4, 'edit'],
         ['Edit', { file_path: 'Features/Inventory/InventoryView.swift' }, 4, 'edit'],
-        ['Bash', { command: 'xcodebuild -scheme Tavern test', description: 'Jalankan unit test lagi' }, 7],
-        ['Bash', { command: 'git commit -am "fix: empty inventory crash"', description: 'Commit perbaikan' }, 3, 'commit'],
+        ['Bash', { command: 'xcodebuild -scheme Tavern test', description: 'Run unit tests again' }, 7],
+        ['Bash', { command: 'git commit -am "fix: empty inventory crash"', description: 'Commit fix' }, 3, 'commit'],
       ],
-      done: 'Crash sudah beres, ada test baru buat inventory kosong.',
+      done: 'Fixed, with a new test for the empty inventory.',
     },
     {
-      title: 'Layar daftar quest', prompt: 'bikin QuestList pakai SwiftUI List',
+      title: 'Quest list screen', prompt: 'build QuestList with a SwiftUI List',
       steps: [
         ['Read', { file_path: 'Features/Quests/QuestList.swift' }, 3],
         ['WebSearch', { query: 'SwiftUI List swipe actions iOS 18' }, 5],
@@ -206,31 +206,31 @@ const QUESTS = {
         ['Edit', { file_path: 'App/TavernApp.swift' }, 3, 'edit'],
         ['Bash', { command: 'xcodebuild -scheme Tavern build', description: 'Build app' }, 6],
       ],
-      done: 'QuestList sudah ada. Mau gw commit?',
+      done: 'QuestList is in. Shall I commit?',
     },
   ],
   'market-web': [
     {
-      title: 'Audit harga & keranjang', prompt: 'cek kenapa total keranjang kadang salah',
+      title: 'Audit cart pricing', prompt: 'find out why the cart total is sometimes wrong',
       steps: [
-        ['Agent', { description: 'Telusuri alur harga', subagent_type: 'Explore' }, 14, 'spawn'],
+        ['Agent', { description: 'Trace the pricing flow', subagent_type: 'Explore' }, 14, 'spawn'],
         ['Read', { file_path: 'src/pricing.ts' }, 3],
         ['Edit', { file_path: 'src/pricing.ts' }, 5, 'edit'],
         ['Edit', { file_path: 'web/cart.js' }, 4, 'edit'],
-        ['Bash', { command: 'npm test', description: 'Jalankan test' }, 5],
-        ['Bash', { command: 'git commit -am "fix: rounding in cart total"', description: 'Commit perbaikan harga' }, 3, 'commit'],
+        ['Bash', { command: 'npm test', description: 'Run tests' }, 5],
+        ['Bash', { command: 'git commit -am "fix: rounding in cart total"', description: 'Commit pricing fix' }, 3, 'commit'],
       ],
-      done: 'Ketemu: pembulatan per item, bukan per total. Sudah dibenerin.',
+      done: 'Found it: rounding per item instead of per total. Fixed.',
     },
     {
-      title: 'Seed katalog', prompt: 'bikin script seed katalog barang',
+      title: 'Seed the catalog', prompt: 'write a script that seeds the catalog',
       steps: [
         ['Read', { file_path: 'src/catalog.ts' }, 3],
         ['Write', { file_path: 'scripts/seed.ts' }, 5, 'edit'],
-        ['Bash', { command: 'node scripts/seed.ts', description: 'Jalankan seed' }, 4],
+        ['Bash', { command: 'node scripts/seed.ts', description: 'Run the seed' }, 4],
         ['Edit', { file_path: 'web/index.html' }, 4, 'edit'],
       ],
-      done: 'Seed jalan, 120 barang masuk.',
+      done: 'Seeded 120 items.',
     },
   ],
 };
@@ -244,35 +244,35 @@ function generatedQuests(name) {
   const testFile = files.find((f) => /test/.test(f)) ?? files[0];
   const code = files.filter((f) => f !== testFile);
   const [a, b, c] = [pick(code), pick(code), pick(code)];
-  const test = { command: 'npm test', description: 'Jalankan test' };
+  const test = { command: 'npm test', description: 'Run tests' };
   return [
     {
-      title: `Fitur baru di ${a.split('/')[0]}`, prompt: `tambahin fitur baru di ${a}`,
+      title: `New feature in ${a.split('/')[0]}`, prompt: `add a new feature in ${a}`,
       steps: [
         ['Read', { file_path: a }, 3], ['Grep', { pattern: 'TODO|FIXME' }, 2],
         ['Edit', { file_path: a }, 5, 'edit'], ['Edit', { file_path: b }, 4, 'edit'],
-        ['Bash', test, 5], ['Bash', { command: `git commit -am "feat: ${a.split('/').pop()}"`, description: 'Commit fitur' }, 3, 'commit'],
+        ['Bash', test, 5], ['Bash', { command: `git commit -am "feat: ${a.split('/').pop()}"`, description: 'Commit feature' }, 3, 'commit'],
       ],
-      done: 'Fiturnya udah jadi.',
+      done: 'The feature is done.',
     },
     {
-      title: 'Kejar bug misterius', prompt: `ada bug aneh di ${b}, tolong cek`,
+      title: 'Chase a mystery bug', prompt: `something is off in ${b}, please take a look`,
       steps: [
         ['Read', { file_path: b }, 3], ['Read', { file_path: testFile }, 3],
         ['Edit', { file_path: b }, 4, 'edit'], ['Bash', test, 6, 'fail'],
         ['Edit', { file_path: testFile }, 4, 'edit'], ['Edit', { file_path: b }, 4, 'edit'],
-        ['Bash', test, 6], ['Bash', { command: 'git commit -am "fix: edge case"', description: 'Commit perbaikan' }, 3, 'commit'],
+        ['Bash', test, 6], ['Bash', { command: 'git commit -am "fix: edge case"', description: 'Commit fix' }, 3, 'commit'],
       ],
-      done: 'Bug-nya ketemu dan udah ada test-nya.',
+      done: 'Found the bug, and added a test for it.',
     },
     {
-      title: 'Riset & rapihin', prompt: `pelajari ${c} terus rapihin`,
+      title: 'Research and tidy up', prompt: `study ${c} and tidy it up`,
       steps: [
-        ['Agent', { description: `Pelajari ${c.split('/')[0]}`, subagent_type: 'Explore' }, 12, 'spawn'],
+        ['Agent', { description: `Study ${c.split('/')[0]}`, subagent_type: 'Explore' }, 12, 'spawn'],
         ['WebSearch', { query: `best practices ${c.split('.').pop()}` }, 4],
         ['Edit', { file_path: c }, 5, 'edit'], ['Edit', { file_path: 'README.md' }, 3, 'edit'],
       ],
-      done: 'Udah dirapihin. Mau di-commit?',
+      done: 'Tidied up. Want me to commit?',
     },
   ];
 }
@@ -318,7 +318,7 @@ async function runSubagent(leader, repoDir, description) {
   writeFileSync(file.replace(/\.jsonl$/, '.meta.json'), JSON.stringify({ agentType: 'Explore', description }));
   sub.prompt(description);
   await runSteps(sub, subagentSteps(repoDir), repoDir);
-  sub.say('Selesai menelusuri.');
+  sub.say('Done exploring.');
 }
 
 async function live(agent, repoName, repoDir, offset) {

@@ -8,6 +8,8 @@
  * happens in the replay too.
  */
 
+import { t } from './i18n.js';
+
 /** The live rules (src/sources/common.mjs decideState), applied at time t. */
 function decide({ pending, latest, turnEnded, afterPrompt, ageMs }) {
   if (pending && ageMs < 10 * 60_000) return { kind: pending.kind, tool: pending };
@@ -127,7 +129,7 @@ export const replay = {
     const from = dayStart(dayMs);
     const to = Math.min(from + 86_400_000, Date.now());
     $('replaybar').hidden = false;
-    $('rb-time').textContent = 'memuat…';
+    $('rb-time').textContent = t('rb.loading');
     $('rb-day').value = isoDay(from);
     let data;
     try {
@@ -135,7 +137,7 @@ export const replay = {
       if (!res.ok) throw new Error(await res.text());
       data = await res.json();
     } catch (err) {
-      $('rb-time').textContent = `gagal: ${err.message}`;
+      $('rb-time').textContent = t('rb.failed', { e: err.message });
       return;
     }
     this.data = data;
@@ -192,9 +194,9 @@ export const replay = {
     const { from, to } = this.data;
     const pos = (t) => `${(((t - from) / (to - from)) * 100).toFixed(2)}%`;
     const ticks = [];
-    for (const town of this.data.towns) for (const c of town.commits) ticks.push(`<i class="mk commit" style="left:${pos(c.at)}" title="${clock(c.at)} commit"></i>`);
+    for (const town of this.data.towns) for (const c of town.commits) ticks.push(`<i class="mk commit" style="left:${pos(c.at)}" title="${clock(c.at)} ${t('rb.commit')}"></i>`);
     for (const events of Object.values(this.data.timelines)) {
-      for (const e of events) if (e.type === 'result' && e.error) ticks.push(`<i class="mk error" style="left:${pos(e.t)}" title="${clock(e.t)} gagal"></i>`);
+      for (const e of events) if (e.type === 'result' && e.error) ticks.push(`<i class="mk error" style="left:${pos(e.t)}" title="${clock(e.t)} ${t('rb.fail')}"></i>`);
     }
     $('rb-marks').innerHTML = ticks.join('');
   },

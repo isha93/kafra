@@ -6,18 +6,18 @@
  * agent means writing a mapper, not touching the renderer.
  */
 export const KINDS = {
-  build: 'membangun',      // writing files: hammer at the building that owns the file
-  research: 'meneliti',    // reading and searching: library
-  craft: 'meracik',        // running commands: workshop
-  trial: 'uji coba',       // running tests: training ground
-  deliver: 'menyetor',     // commit and push: Kafra storage
-  teleport: 'teleport',    // web access: Kafra warp
-  summon: 'memanggil',     // spawning a subagent
-  ask: 'bertanya',         // waiting on a question it asked you
-  cast: 'casting',         // between tools: the model is thinking
-  waiting: 'menunggu',     // turn ended, your move
+  build: 'building',        // writing files: hammer at the building that owns the file
+  research: 'researching',  // reading and searching: library
+  craft: 'crafting',        // running commands: workshop
+  trial: 'training',        // running tests: training ground
+  deliver: 'delivering',    // commit and push: Kafra storage
+  teleport: 'teleporting',  // web access: Kafra warp
+  summon: 'summoning',      // spawning a subagent
+  ask: 'asking',            // waiting on a question it asked you
+  cast: 'casting',          // between tools: the model is thinking
+  waiting: 'waiting',       // turn ended, your move
   idle: 'idle',
-  resting: 'istirahat',
+  resting: 'resting',
 };
 
 const TEST_RE = /\b(test|tests|jest|vitest|pytest|xcodebuild\b.*\btest|go test|cargo test|swift test|playwright)\b/;

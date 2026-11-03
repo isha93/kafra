@@ -65,7 +65,8 @@ test('public mode keeps the game: tiers, kinds, statuses, district buildings', (
   assert.equal(t.tier.id, 'camp');
   assert.equal(t.agents[0].kind, 'build');
   assert.equal(t.agents[0].building, t.districts.find((d) => d.files === 10).name);
-  assert.match(t.owner, /^Kerajaan \d+$/);
+  // A placeholder the client renders as "Kingdom 1" / "Kerajaan 1".
+  assert.match(t.owner, /^#\d+$/);
 });
 
 test('party window sessions are stripped too', () => {

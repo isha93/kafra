@@ -5,10 +5,11 @@
  */
 
 export const STATUS = {
-  waiting: { color: 0xffc400, css: '#ffc400', label: 'nunggu kamu', rank: 0 },
-  error: { color: 0xe5483a, css: '#e5483a', label: 'error', rank: 1 },
-  working: { color: 0x5cc030, css: '#5cc030', label: 'kerja', rank: 2 },
-  idle: { color: 0x8a8a8a, css: '#8a8a8a', label: 'idle', rank: 3 },
+  // Labels are i18n keys `status.<name>`.
+  waiting: { color: 0xffc400, css: '#ffc400', rank: 0 },
+  error: { color: 0xe5483a, css: '#e5483a', rank: 1 },
+  working: { color: 0x5cc030, css: '#5cc030', rank: 2 },
+  idle: { color: 0x8a8a8a, css: '#8a8a8a', rank: 3 },
 };
 
 export function statusOf(a) {

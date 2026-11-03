@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,14 +13,15 @@
 
 <div class="window panel worldmap">
   <div class="titlebar">
-    <span class="title">World Map</span>
+    <span class="title" data-i18n="ui.worldmap">World Map</span>
     <span class="count">
-      <button id="replay-open" class="tb-btn" type="button" title="Putar ulang hari ini (R)">⏪ Replay</button>
-      <button id="news-open" class="tb-btn" type="button" title="Koran Kafra hari ini">📰</button>
-      <a href="party.html" title="Tampilan tabel">↗</a>
+      <button id="replay-open" class="tb-btn" type="button" data-i18n="ui.replay" data-i18n-title="ui.replay.title">⏪ Replay</button>
+      <button id="news-open" class="tb-btn" type="button" data-i18n-title="ui.news.title">📰</button>
+      <button id="lang" class="tb-btn" type="button" data-i18n-title="ui.lang.title">🌐</button>
+      <a href="party.html" data-i18n-title="ui.party.title">↗</a>
     </span>
   </div>
-  <div id="towns" class="towns"><div class="empty">Menghubungi Kafra…</div></div>
+  <div id="towns" class="towns"><div class="empty" data-i18n="ui.connecting">Calling Kafra…</div></div>
   <div class="statusbar">
     <span id="conn" class="conn off">offline</span>
     <span id="mode" class="mode"></span>
@@ -31,14 +32,14 @@
 <div id="replaybar" class="window panel replaybar" hidden>
   <div class="titlebar"><span class="title">⏪ Replay</span><span class="count" id="rb-time">--:--</span></div>
   <div class="rb-row">
-    <button id="rb-play" class="rb-btn" type="button" title="Putar / jeda (Spasi)">▶</button>
-    <select id="rb-speed" class="rb-speed" title="Kecepatan">
+    <button id="rb-play" class="rb-btn" type="button" data-i18n-title="ui.play.title">▶</button>
+    <select id="rb-speed" class="rb-speed" data-i18n-title="ui.speed.title">
       <option value="10">×10</option><option value="60" selected>×60</option><option value="300">×300</option><option value="1200">×1200</option>
     </select>
-    <input id="rb-day" class="rb-day" type="date" title="Pilih hari">
+    <input id="rb-day" class="rb-day" type="date" data-i18n-title="ui.day.title">
     <div class="rb-track"><div id="rb-marks" class="rb-marks"></div><input id="rb-slider" type="range" min="0" max="1000" value="0"></div>
-    <button id="rb-news" class="rb-btn" type="button" title="Koran hari ini">📰</button>
-    <button id="rb-live" class="rb-btn live" type="button" title="Kembali ke sekarang (Esc)">● Live</button>
+    <button id="rb-news" class="rb-btn" type="button" data-i18n-title="ui.news.title">📰</button>
+    <button id="rb-live" class="rb-btn live" type="button" data-i18n-title="ui.live.title">● Live</button>
   </div>
 </div>
 
@@ -46,7 +47,7 @@
 
 <div class="window panel info">
   <div class="titlebar">
-    <span class="title" id="detail-title">Kafra Service</span>
+    <span class="title" id="detail-title" data-i18n="head.kafra">Kafra Service</span>
     <span class="count">Tab · Esc · M</span>
   </div>
   <div id="detail" class="detail"></div>
@@ -54,18 +55,18 @@
 
 <div class="window panel partybar">
   <div class="titlebar">
-    <span class="title">Party</span>
+    <span class="title" data-i18n="ui.party">Party</span>
     <span class="count">
-      <button id="notify" class="tb-btn" type="button">🔔 notifikasi</button>
-      <button id="sound" class="tb-btn" type="button">🔈 suara</button>
-      <button id="music" class="tb-btn" type="button">🎵 musik</button>
+      <button id="notify" class="tb-btn" type="button">🔕 notifications</button>
+      <button id="sound" class="tb-btn" type="button">🔈 sound</button>
+      <button id="music" class="tb-btn" type="button">🎵 music</button>
     </span>
   </div>
   <div id="party" class="party-row"></div>
 </div>
 
 <div class="window panel chat">
-  <div class="titlebar"><span class="title">Chat Log</span></div>
+  <div class="titlebar"><span class="title" data-i18n="ui.chat">Chat Log</span></div>
   <div id="log" class="log"></div>
 </div>
 

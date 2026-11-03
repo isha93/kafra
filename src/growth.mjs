@@ -62,13 +62,14 @@ const FAMILY = {
 };
 
 export const BIOMES = {
-  coast: { name: 'Pantai', languages: 'Swift / Kotlin' },
-  desert: { name: 'Gurun', languages: 'TypeScript' },
-  plains: { name: 'Padang', languages: 'JavaScript / Web' },
-  snow: { name: 'Pegunungan Salju', languages: 'Go / Rust / C' },
-  forest: { name: 'Hutan', languages: 'Python' },
-  meadow: { name: 'Taman Bunga', languages: 'Dokumentasi' },
-  canyon: { name: 'Ngarai', languages: 'Ruby / PHP / Java' },
+  // Display names live in the client's i18n (`biome.<id>`); these are for logs and the API.
+  coast: { name: 'Coast', languages: 'Swift / Kotlin' },
+  desert: { name: 'Desert', languages: 'TypeScript' },
+  plains: { name: 'Plains', languages: 'JavaScript / Web' },
+  snow: { name: 'Snowy peaks', languages: 'Go / Rust / C' },
+  forest: { name: 'Forest', languages: 'Python' },
+  meadow: { name: 'Flower meadow', languages: 'Docs' },
+  canyon: { name: 'Canyon', languages: 'Ruby / PHP / Java' },
 };
 
 const BIOME_OF = { swift: 'coast', ts: 'desert', web: 'plains', systems: 'snow', python: 'forest', docs: 'meadow', backend: 'canyon' };

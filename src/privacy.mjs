@@ -36,7 +36,7 @@ export function loadConfig() {
           hide: strings(raw.hide), only: strings(raw.only), redact: strings(raw.redact), public: raw.public === true,
         };
       } catch (err) {
-        error = `kafra.config.json tidak bisa dibaca: ${err.message}`;
+        error = `kafra.config.json could not be read: ${err.message}`;
       }
     }
     setExtraRedactions(config.redact);
@@ -106,9 +106,10 @@ export function publicWorld(world) {
   const towns = world.towns.map((t) => {
     // District names are folder names; number them instead, in a stable order.
     const order = t.districts.map((d) => d.name).sort();
-    const districtName = (name) => (order.includes(name) ? `Distrik ${order.indexOf(name) + 1}` : 'Distrik');
+    // "#n" placeholders; the client renders them as "District n" / "Distrik n".
+    const districtName = (name) => (order.includes(name) ? `#${order.indexOf(name) + 1}` : '#0');
     // Kingdoms stay grouped, but anonymously.
-    if (t.owner && !kingdoms.has(t.owner)) kingdoms.set(t.owner, `Kerajaan ${kingdoms.size + 1}`);
+    if (t.owner && !kingdoms.has(t.owner)) kingdoms.set(t.owner, `#${kingdoms.size + 1}`);
     return {
       id: opaque(t.id),
       town: t.town,
@@ -138,7 +139,7 @@ export function publicSessions(data) {
     ...data,
     public: true,
     sessions: (data.sessions ?? []).map((s) => ({
-      ...publicAgent(s, () => 'Distrik'),
+      ...publicAgent(s, () => '#0'),
       map: '', cwd: '', branch: '', party: [],
     })),
   };
@@ -153,7 +154,7 @@ export function publicTimelines(world, pub) {
   const timelines = {};
   world.towns.forEach((t) => {
     const order = t.districts.map((d) => d.name).sort();
-    const districtName = (name) => (name && order.includes(name) ? `Distrik ${order.indexOf(name) + 1}` : null);
+    const districtName = (name) => (name && order.includes(name) ? `#${order.indexOf(name) + 1}` : null);
     for (const a of t.agents) {
       const events = world.timelines[a.id];
       if (!events) continue;

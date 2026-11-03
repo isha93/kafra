@@ -2,6 +2,10 @@ import { listSessions, replaySessions } from './sources/index.mjs';
 import { repoRootOf, repoStats, districtOfFile, commitsBetween } from './repos.mjs';
 import { loadConfig, visible, publicWorld, publicTimelines } from './privacy.mjs';
 import { redact } from './activity.mjs';
+import { serverLang } from '../web/city/i18n.js';
+
+/** The language of this machine's user; the browser follows it unless told otherwise. */
+const LANG = serverLang();
 
 /**
  * One repo, one town.
@@ -40,7 +44,7 @@ function townNames(roots) {
 }
 
 /** Sessions outside any git repo still need somewhere to stand. */
-const FIELD = { id: 'field', town: 'Prontera Field', name: 'tanpa repo', owner: '', districts: [], commits: [] };
+const FIELD = { id: 'field', town: 'Prontera Field', name: '', owner: '', districts: [], commits: [] };
 
 /**
  * Which building an agent should stand at.
@@ -143,7 +147,7 @@ export async function buildWorld() {
   const config = loadConfig();
   const { sessions, error, scannedAt } = await listSessions();
   if (error) return { error, towns: [], scannedAt };
-  const world = { towns: await townsFrom(sessions, config), scannedAt, configError: config.error ?? undefined };
+  const world = { towns: await townsFrom(sessions, config), scannedAt, lang: LANG, configError: config.error ?? undefined };
   return config.public ? publicWorld(world) : world;
 }
 
@@ -164,7 +168,7 @@ const replayCache = new Map();
  */
 export async function buildReplay({ from, to }) {
   to = Math.min(to, Date.now());
-  if (!(to > from) || to - from > REPLAY_SPAN_MAX) throw new Error('rentang replay tidak valid (maks 2 hari)');
+  if (!(to > from) || to - from > REPLAY_SPAN_MAX) throw new Error('invalid replay range (at most 2 days)');
   const key = `${from}-${to}`;
   const hit = replayCache.get(key);
   // A finished day never changes, so it is kept for a while; today is re-read
@@ -226,6 +230,6 @@ async function computeReplay(from, to) {
       });
     }
   }
-  const world = { from, to, towns, timelines, configError: config.error ?? undefined };
+  const world = { from, to, towns, timelines, lang: LANG, configError: config.error ?? undefined };
   return config.public ? publicTimelines(world, publicWorld(world)) : world;
 }

@@ -6,6 +6,7 @@
 
 *Every repo is a town. Every agent is a character. Watch them build, live or replayed.*
 
+[![test](https://github.com/isha93/kafra/actions/workflows/test.yml/badge.svg)](https://github.com/isha93/kafra/actions/workflows/test.yml)
 ![Node 20+](https://img.shields.io/badge/node-20%2B-3c873a)
 ![Dependencies: 0](https://img.shields.io/badge/dependencies-0-success)
 ![Runs locally](https://img.shields.io/badge/runs-127.0.0.1%20only-blue)
@@ -35,7 +36,9 @@ nothing into your agents, and makes no network calls. There's no
 
 ## 📜 Quest 1: Enter the world
 
-> **Requirements:** Node 20+ · git · a terminal
+> **Requirements:** Node 20+ · git · a terminal. Tested on macOS and Linux
+> (Node 20, 22 and 24); on Windows, use WSL. The menu bar, notifier and
+> autostart are macOS-only.
 
 ```bash
 git clone https://github.com/isha93/kafra.git
@@ -68,6 +71,11 @@ cd kafra
 | `M` | world map |
 | `R` / `Space` | open replay / play–pause |
 | `Esc` | clear selection, close the newspaper, leave replay |
+| 🌐 | switch between English and Bahasa Indonesia |
+
+**Language.** Kafra speaks English and Bahasa Indonesia. It follows your
+system language, and you can switch with 🌐 (remembered per browser), add
+`?lang=id` to the URL, or set `KAFRA_LANG=id` for the terminal and menu bar.
 
 ---
 
@@ -223,6 +231,12 @@ never reads your files' contents, only their paths and counts.
 `KAFRA_SOURCES=claude-code,codex` limits which sources are read, and
 `KAFRA_MAX_AGE_DAYS` (default 7) sets how far back.
 
+> ⚠️ These session files are each tool's internal format, not a public API,
+> and can change with any update. If an agent stops showing up right after an
+> upgrade, please [open an issue](https://github.com/isha93/kafra/issues/new?template=agent-format.yml).
+> The template tells you how to share the file's structure without sharing
+> your prompts.
+
 **Hide what you don't want shown.** Copy `kafra.config.example.json` to
 `kafra.config.json` (it's gitignored). Changes apply without a restart.
 
@@ -300,7 +314,8 @@ Measured on a MacBook with about 450 sessions on disk:
 | 🔒 | **Guild Recruiter**: Aider, Cursor and OpenCode |
 | 🔒 | **Commander**: approve tool calls from the city (opt-in, needs hooks) |
 
-The full list is in [ROADMAP.md](ROADMAP.md).
+The full list is in [ROADMAP.md](ROADMAP.md), and what shipped when is in
+[CHANGELOG.md](CHANGELOG.md).
 
 ## 🧭 For game masters
 

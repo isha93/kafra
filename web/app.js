@@ -6,6 +6,11 @@
  * every two seconds.
  */
 
+import { t, locale, initBrowserLang, applyStatic } from './city/i18n.js';
+
+initBrowserLang();
+applyStatic();
+
 const rowsEl = document.getElementById('rows');
 const countEl = document.getElementById('count');
 const connEl = document.getElementById('conn');
@@ -41,18 +46,18 @@ function hpClass(hp) {
   return 'hp';
 }
 
-const STATUS_LABEL = { active: 'casting', idle: 'idle', resting: 'resting' };
+const STATUS_LABEL = { active: 'pw.casting', idle: 'pw.idle', resting: 'pw.resting' };
 
 function ago(ms) {
   const s = Math.round(ms / 1000);
-  if (s < 60) return `${s}d lalu`;
+  if (s < 60) return t('ago.s', { n: s });
   const m = Math.round(s / 60);
-  if (m < 60) return `${m}m lalu`;
-  return `${Math.round(m / 60)}j lalu`;
+  if (m < 60) return t('ago.m', { n: m });
+  return t('ago.h', { n: Math.round(m / 60) });
 }
 
 function rowHTML(s) {
-  const where = [s.branch && `⎇ ${s.branch}`, s.isParty && 'party member']
+  const where = [s.branch && `⎇ ${s.branch}`, s.isParty && t('pw.party')]
     .filter(Boolean)
     .join(' · ');
   return `
@@ -64,9 +69,9 @@ function rowHTML(s) {
     <span class="job">${esc(s.job)}</span>
     <span class="hp-wrap">
       <span class="${hpClass(s.hp)}"><i style="width:${s.hp}%"></i></span>
-      <span class="hp-text">${s.hp}% &middot; ${s.tokens.toLocaleString('id-ID')} tok</span>
+      <span class="hp-text">${s.hp}% &middot; ${s.tokens.toLocaleString(locale())} tok</span>
     </span>
-    <span class="status ${s.status}"><span class="dot"></span>${STATUS_LABEL[s.status] ?? s.status}</span>
+    <span class="status ${s.status}"><span class="dot"></span>${STATUS_LABEL[s.status] ? t(STATUS_LABEL[s.status]) : s.status}</span>
     <span class="preview" title="${esc(s.cwd)}">${esc(s.preview || '—')} <em>(${ago(s.ageMs)})</em></span>
   `;
 }
@@ -77,9 +82,9 @@ function esc(v) {
 }
 
 function render({ sessions = [], scannedAt, error }) {
-  countEl.textContent = error ? '!' : `${sessions.length} adventurer`;
+  countEl.textContent = error ? '!' : t('pw.count', { n: sessions.length });
   scannedEl.textContent = scannedAt
-    ? `dipindai ${new Date(scannedAt).toLocaleTimeString('id-ID')}`
+    ? t('pw.scanned', { time: new Date(scannedAt).toLocaleTimeString(locale()) })
     : '';
 
   if (error) {
@@ -87,7 +92,7 @@ function render({ sessions = [], scannedAt, error }) {
     return;
   }
   if (!sessions.length) {
-    rowsEl.innerHTML = '<div class="empty">Tidak ada sesi dalam 7 hari terakhir.</div>';
+    rowsEl.innerHTML = `<div class="empty">${esc(t('pw.none'))}</div>`;
     return;
   }
 
@@ -121,6 +126,6 @@ source.onmessage = (e) => {
   render(JSON.parse(e.data));
 };
 source.onerror = () => {
-  connEl.textContent = 'terputus — mencoba lagi';
+  connEl.textContent = t('conn.lost');
   connEl.className = 'conn off';
 };

@@ -20,7 +20,7 @@ export function writeFixtures(out, cwd) {
   const base = { cwd, gitBranch: 'main', version: '2.1.0', timestamp: now };
   const usage = (n) => ({ input_tokens: 10, cache_read_input_tokens: n, cache_creation_input_tokens: 0, output_tokens: 5 });
   let n = 0;
-  function session(model, title, tool, input, { result = false, error = false, text = null, tokens = 200000, ageMin = 0, prompt = 'kerjain fitur baru' } = {}) {
+  function session(model, title, tool, input, { result = false, error = false, text = null, tokens = 200000, ageMin = 0, prompt = 'build the new feature' } = {}) {
     const id = `fixture-${++n}`;
     const recs = [
       { ...base, sessionId: id, type: 'user', message: { role: 'user', content: prompt } },
@@ -34,17 +34,17 @@ export function writeFixtures(out, cwd) {
     if (ageMin) { const t = new Date(Date.now() - ageMin * 60000); utimesSync(f, t, t); }
     return id;
   }
-  session('claude-opus-5-5', 'Bikin city view', 'Edit', { file_path: `${cwd}/web/city/agent.js` });
-  session('claude-sonnet-5-5', 'Edit backend', 'Write', { file_path: `${cwd}/src/world.mjs` }, { result: true, tokens: 900000 });
-  session('claude-haiku-5-5', 'Cari bug parser', 'Grep', { pattern: 'tool_use', path: cwd });
-  session('claude-sonnet-5-5', 'Jalankan test', 'Bash', { command: 'npm test', description: 'Run test suite' }, { result: true, error: true });
-  session('claude-fable-5-1', 'Riset PixiJS', 'WebSearch', { query: 'pixijs v8 sprite sheet' });
-  session('claude-opus-5-5', 'Install deps', 'Bash', { command: 'npm install', description: 'Install dependencies' });
-  session('claude-opus-5-5', 'Commit fitur', 'Bash', { command: 'git commit -m "feat"', description: 'Commit changes' });
-  const lead = session('claude-opus-5-5', 'Audit keamanan', 'Agent', { description: 'Audit read-only safety', subagent_type: 'Explore' });
-  session('claude-sonnet-5-5', 'Review README', null, null, { text: 'Udah selesai, mau lanjut?' });
-  session('claude-haiku-5-5', 'Sesi lama', null, null, { text: 'done', ageMin: 120 });
-  session('claude-sonnet-5-5', 'Sesi idle', null, null, { text: 'ok', ageMin: 10, tokens: 950000 });
+  session('claude-opus-5-5', 'Build the city view', 'Edit', { file_path: `${cwd}/web/city/agent.js` });
+  session('claude-sonnet-5-5', 'Edit the backend', 'Write', { file_path: `${cwd}/src/world.mjs` }, { result: true, tokens: 900000 });
+  session('claude-haiku-5-5', 'Find the parser bug', 'Grep', { pattern: 'tool_use', path: cwd });
+  session('claude-sonnet-5-5', 'Run the tests', 'Bash', { command: 'npm test', description: 'Run test suite' }, { result: true, error: true });
+  session('claude-fable-5-1', 'Research PixiJS', 'WebSearch', { query: 'pixijs v8 sprite sheet' });
+  session('claude-opus-5-5', 'Install dependencies', 'Bash', { command: 'npm install', description: 'Install dependencies' });
+  session('claude-opus-5-5', 'Commit the feature', 'Bash', { command: 'git commit -m "feat"', description: 'Commit changes' });
+  const lead = session('claude-opus-5-5', 'Security audit', 'Agent', { description: 'Audit read-only safety', subagent_type: 'Explore' });
+  session('claude-sonnet-5-5', 'Review the README', null, null, { text: 'All done. Carry on?' });
+  session('claude-haiku-5-5', 'An old session', null, null, { text: 'done', ageMin: 120 });
+  session('claude-sonnet-5-5', 'An idle session', null, null, { text: 'ok', ageMin: 10, tokens: 950000 });
   // A subagent under the auditing session.
   const sub = join(dir, lead, 'subagents');
   mkdirSync(sub, { recursive: true });
