@@ -20,6 +20,7 @@ import { buildingArt } from './assets.js';
 import { drawGround, drawWalls, moodTint, CASTLE } from './land.js';
 import { isStormy } from './sky.js';
 import { LONG_RUN_MS, LOW_HP } from './status.js';
+import { sfxAt } from './audio.js';
 
 /**
  * Real art for a building key when web/assets has it, else the drawn fallback.
@@ -268,7 +269,10 @@ export class Town {
         sprite = new AgentSprite(this, a, spawn);
         this.agents.set(a.id, sprite);
         this.layer.addChild(sprite.view);
-        if (prev) this.onEvent?.({ town: data, agent: a, type: 'arrive' });
+        if (prev) {
+          this.onEvent?.({ town: data, agent: a, type: 'arrive' });
+          sfxAt('warp', this.portal, this.zoom ?? 1, 0.6);
+        }
       }
       const before = sprite.data;
       sprite.update(a, spot ?? undefined);
@@ -315,6 +319,7 @@ export class Town {
     const k = iso(CIVIC.kafra.x, CIVIC.kafra.y);
     this.fx.fireworks(k.x, k.y - 50, k.y + 100);
     this.fx.popText(k.x, k.y - 70, k.y + 100, 'Level Up!', 0xffd54f, 16);
+    sfxAt('fanfare', this.kafraNpc, this.zoom ?? 1);
     for (const c of fresh) this.onEvent?.({ town: data, type: 'commit', commit: c });
   }
 
@@ -324,6 +329,7 @@ export class Town {
 
   tick(dt, zoom) {
     this.time += dt;
+    this.zoom = zoom;
     this.portal.alpha = 0.6 + Math.sin(this.time * 3) * 0.3;
     this.portal.scale.set(1 + Math.sin(this.time * 3) * 0.05);
     const npc = bodyFrame('kafra', 'idle', 's', this.time);

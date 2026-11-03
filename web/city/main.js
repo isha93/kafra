@@ -11,7 +11,8 @@ import { iso, SIZE } from './layout.js';
 import { layoutWorld, drawWorld, townCentre, TownMarker, Traveler } from './world.js';
 import * as ui from './ui.js';
 import { loadArt } from './assets.js';
-import { skyAt } from './sky.js';
+import { skyAt, isStormy } from './sky.js';
+import { bindStage, setMusicMood } from './audio.js';
 
 TextureSource.defaultOptions.scaleMode = 'nearest';
 
@@ -26,6 +27,7 @@ await app.init({
 });
 document.getElementById('stage').append(app.canvas);
 await loadArt();
+bindStage(app);
 
 const world = new Container();
 app.stage.addChild(world);
@@ -219,6 +221,23 @@ function selectedAgentPoint() {
 
 let sky = skyAt();
 setInterval(() => { sky = skyAt(); }, 30_000);
+
+/** Music follows what's on screen: the nearest town's biome, or the world theme from afar. */
+setInterval(() => {
+  let biome = 'world', storm = false;
+  if (cam.zoom >= FAR && towns.size) {
+    let best = null, bestD = Infinity;
+    for (const [id, { town }] of towns) {
+      const o = layout.positions.get(id);
+      if (!o) continue;
+      const c = townCentre(o);
+      const d = Math.hypot(c.x - cam.x, c.y - cam.y);
+      if (d < bestD) { bestD = d; best = town; }
+    }
+    if (best?.data) { biome = best.data.biome?.id ?? 'plains'; storm = isStormy(best.data); }
+  }
+  setMusicMood({ biome, night: sky.glow > 0.5, storm });
+}, 1000);
 
 app.ticker.add((ticker) => {
   const dt = Math.min(0.1, ticker.deltaMS / 1000);

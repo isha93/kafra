@@ -138,6 +138,18 @@ so without this an agent would look like it is "casting" almost all the time.
   a count of waiting agents in the tab title.
 - **The world map.** Zoomed out, each town becomes a pin coloured by its most
   urgent agent.
+- **Sound and music** (both off until you click 🔈 / 🎵 on the party bar). All
+  of it is synthesised in the browser, with no audio files and nothing
+  fetched:
+  - Each activity has its own sound: a hammer clank when building, page flips
+    when researching, bubbling potions, sword swishes, coins, a warp hum, a
+    summoning arpeggio, and a fanfare on every commit.
+  - Sounds are positional: panned by where the agent is on screen, quieter
+    away from the centre, and silent on the world map.
+  - The background music is a small generative chiptune. It follows the town
+    you're looking at: its scale and instrument change with the biome, it
+    slows down at night, and the world map has its own theme. None of it
+    imitates Ragnarok's music.
 - **Time and weather.** Day and night follow your local clock, and a town
   rains while a tool there is failing. To preview them: `?hour=21`,
   `?weather=rain`, `?weather=clear`.

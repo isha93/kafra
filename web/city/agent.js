@@ -10,6 +10,20 @@ import { itemGraphic, label, CLASSES } from './art.js';
 import { bodyFrame, animates } from './skin.js';
 import { iconFor } from './assets.js';
 import { STATUS, statusOf } from './status.js';
+import { sfxAt } from './audio.js';
+
+/**
+ * Ambient sound per activity, as [sound, seconds between, loudness]. Hammer
+ * and sword sounds aren't here: they play on the swing's impact instead.
+ */
+const AMBIENT = {
+  research: ['page', 1.4, 0.8],
+  craft: ['bubble', 1.1, 0.8],
+  deliver: ['coin', 1.8, 0.7],
+  teleport: ['warp', 2.4, 0.8],
+  summon: ['summon', 2.6, 0.8],
+  cast: ['shimmer', 3.2, 0.6],
+};
 import { iso, route } from './layout.js';
 
 const WALK_TILES_PER_S = 3.2;
@@ -232,6 +246,7 @@ export class AgentSprite {
     const d = this.data;
     this.phase += dt;
     this.fxTimer += dt;
+    this.zoom = zoom;
 
     const moving = this.walk(dt);
     const sitting = !moving && SITTING.has(d.kind);
@@ -306,6 +321,13 @@ export class AgentSprite {
     const z = this.view.zIndex + 1;
     const item = this.item;
 
+    const ambient = AMBIENT[d.kind];
+    this.sfxTimer = (this.sfxTimer ?? Math.random()) + dt;
+    if (ambient && this.sfxTimer > ambient[1]) {
+      this.sfxTimer = 0;
+      sfxAt(ambient[0], this.view, this.zoom, ambient[2]);
+    }
+
     switch (d.kind) {
       case 'build':
       case 'trial': {
@@ -323,9 +345,11 @@ export class AgentSprite {
           const hx = x + 16 * this.facing;
           if (d.kind === 'build') {
             fx.sparks(hx, y - 10, z);
+            sfxAt('hammer', this.view, this.zoom);
             this.town.shakeBuilding(d.building);
           } else if (Math.random() < 0.7) {
             fx.popText(hx + 14 * this.facing, y - 30, z, String(Math.floor(40 + Math.random() * 900)));
+            sfxAt('slash', this.view, this.zoom);
           }
         }
         break;
@@ -363,6 +387,7 @@ export class AgentSprite {
   /** One-off reactions to events the town spots by diffing server states. */
   hurt() {
     this.town.fx.popText(this.view.x, this.view.y - 40, this.view.zIndex + 1, 'Miss', 0xff5252, 13);
+    sfxAt('miss', this.view, this.zoom ?? 1);
   }
 
   accent() { return CLASSES[this.data.sprite]?.accent ?? 0xffffff; }

@@ -8,6 +8,7 @@
 import { iconFor, characterSheets } from './assets.js';
 import { repoLabel, districtLabel } from './town.js';
 import { STATUS, statusOf, since, duration } from './status.js';
+import { sfx, setSfx, setMusic } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -377,31 +378,12 @@ setInterval(() => {
 /* ── Alerts ─────────────────────────────────────────────────────────────── */
 
 const ALERT_TYPES = new Set(['waiting', 'error', 'longrun', 'lowhp']);
-const prefs = { notify: false, sound: false };
+const prefs = { notify: false, sound: false, music: false };
 try { Object.assign(prefs, JSON.parse(localStorage.getItem('kafra.alerts') ?? '{}')); } catch { /* private mode */ }
 const savePrefs = () => { try { localStorage.setItem('kafra.alerts', JSON.stringify(prefs)); } catch { /* ignore */ } };
 
-let audio = null;
-/** A short two-note chime; higher for "your turn", lower for trouble. */
-function chime(type) {
-  if (!prefs.sound) return;
-  try {
-    audio ??= new AudioContext();
-    const notes = type === 'waiting' ? [660, 880] : [440, 330];
-    notes.forEach((f, i) => {
-      const o = audio.createOscillator(), g = audio.createGain();
-      o.type = 'triangle';
-      o.frequency.value = f;
-      const t0 = audio.currentTime + i * 0.14;
-      g.gain.setValueAtTime(0.0001, t0);
-      g.gain.exponentialRampToValueAtTime(0.18, t0 + 0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.3);
-      o.connect(g).connect(audio.destination);
-      o.start(t0);
-      o.stop(t0 + 0.32);
-    });
-  } catch { /* audio unavailable */ }
-}
+/** Higher chime for "your turn", lower for trouble. */
+const chime = (type) => sfx(type === 'waiting' ? 'chimeUp' : 'chimeDown');
 
 function alert(ev, text) {
   if (!ALERT_TYPES.has(ev.type)) return;
@@ -416,7 +398,9 @@ function alert(ev, text) {
 }
 
 function paintToggles() {
-  const n = $('notify'), s = $('sound');
+  const n = $('notify'), s = $('sound'), m = $('music');
+  m.classList.toggle('on', prefs.music);
+  m.textContent = prefs.music ? '🎵 musik on' : '🎵 musik';
   const granted = 'Notification' in window && Notification.permission === 'granted';
   n.classList.toggle('on', prefs.notify && granted);
   n.textContent = prefs.notify && granted ? '🔔 notifikasi on' : '🔕 notifikasi';
@@ -436,10 +420,25 @@ export function bindAlerts() {
   };
   $('sound').onclick = () => {
     prefs.sound = !prefs.sound;
+    setSfx(prefs.sound);
     savePrefs();
     paintToggles();
     if (prefs.sound) chime('waiting');
   };
+  $('music').onclick = () => {
+    prefs.music = !prefs.music;
+    setMusic(prefs.music);
+    savePrefs();
+    paintToggles();
+  };
+  // Saved preferences can't start audio by themselves: browsers need a gesture.
+  // Arm them, and the first click anywhere on the page turns them back on.
+  if (prefs.sound || prefs.music) {
+    window.addEventListener('pointerdown', () => {
+      if (prefs.sound) setSfx(true);
+      if (prefs.music) setMusic(true);
+    }, { once: true });
+  }
   paintToggles();
 }
 

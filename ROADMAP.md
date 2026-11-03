@@ -16,6 +16,8 @@ would change that is opt-in and listed last.
 - Hardening: DNS-rebinding and cross-site protection, strict CSP without eval,
   `npm ci --ignore-scripts`
 - Privacy: `kafra.config.json` (hide / only / redact) and public mode
+- Synthesised sound: positional effects per activity, and generative
+  background music per biome
 
 ## 1. Privacy and safety
 
