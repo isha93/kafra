@@ -38,6 +38,12 @@ test('a notify hint per waiting agent, none for working or finished subagents', 
   ]), { port: 4317, now });
   const hints = text.split('\n').filter((l) => l.startsWith('#notify '));
   assert.deepEqual(hints.map((l) => l.split(' ')[1]), ['w1']);
+  // Exactly four space-separated fields, each URL-safe, so the shell can paste them.
+  const [, id, body, href] = hints[0].split(' ');
+  assert.equal(hints[0].split(' ').length, 4);
+  assert.match(decodeURIComponent(body), /Lord Knight di Payon menunggu giliranmu/);
+  assert.equal(decodeURIComponent(href), 'http://127.0.0.1:4317/#agent=w1');
+  for (const f of [id, body, href]) assert.doesNotMatch(f, /[\s&"'`$;|]/);
 });
 
 test('sleeping agents collapse into a count', () => {

@@ -6,3 +6,4 @@ assets-src/candidates/
 web/_cand/
 web/_sheet.html
 kafra.config.json
+integrations/notifier/build/

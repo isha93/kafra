@@ -6,8 +6,10 @@
  * where it is tested and goes through the same privacy rules as the city.
  *
  * Lines starting with "#notify " are not menu items: the plugin reads them to
- * send a native notification once per agent that starts waiting, then strips
- * them before SwiftBar sees the output.
+ * send a notification once per agent that starts waiting, then strips them
+ * before SwiftBar sees the output. Each is `#notify <id> <body> <href>`, all
+ * three URL-encoded here, so the plugin can paste them into a swiftbar:// URL
+ * without any quoting of its own.
  */
 import { STATUS, statusOf, since, duration } from '../web/city/status.js';
 
@@ -63,7 +65,9 @@ export function swiftbarText(world, { port, now = Date.now() } = {}) {
 
   // Notification hints for the plugin: one per agent waiting for you.
   for (const { a, t } of waiting) {
-    lines.push(`#notify ${encodeURIComponent(a.id)} ${clean(`${a.isParty ? a.agentType : a.job} di ${t.town} menunggu giliranmu`)}`);
+    const body = clean(`${a.isParty ? a.agentType : a.job} di ${t.town} menunggu giliranmu`);
+    const href = `${base}#agent=${encodeURIComponent(a.id)}`;
+    lines.push(`#notify ${encodeURIComponent(a.id)} ${encodeURIComponent(body)} ${encodeURIComponent(href)}`);
   }
   return lines.join('\n') + '\n';
 }

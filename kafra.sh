@@ -172,6 +172,18 @@ install_menubar() {
   # A link, not a copy: updating Kafra updates the plugin too.
   ln -sf "$PWD/integrations/swiftbar/kafra.10s.sh" "$dir/kafra.10s.sh"
   ok "Plugin terpasang di $dir"
+  # Notifications as "Kafra" (osascript's belong to Script Editor), built from
+  # source here so no third-party app is involved.
+  if command -v swiftc >/dev/null 2>&1; then
+    kafra "Merakit Kafra Notifier dari source (swiftc)…"
+    if ./integrations/notifier/build.sh >/dev/null 2>&1; then
+      ok "Kafra Notifier siap — macOS akan menanyakan izin notifikasi untuk \"Kafra\" sekali"
+    else
+      printf '%s\n' "  ${GOLD}!${OFF} Gagal merakit Kafra Notifier; notifikasi memakai SwiftBar."
+    fi
+  else
+    printf '%s\n' "  ${GOLD}!${OFF} swiftc tidak ada (pasang Xcode Command Line Tools); notifikasi memakai SwiftBar."
+  fi
   # SwiftBar watches its plugin folder, so a running SwiftBar picks the plugin up
   # by itself. Don't send it swiftbar:// URLs: SwiftBar 2.1.1 crashes on them
   # while it is still starting.

@@ -22,16 +22,20 @@ if [[ -z "$out" ]]; then
   exit 0
 fi
 
-# Native notification once per agent that starts waiting. Text goes to
-# osascript as arguments, never inside the script, so it can't inject anything.
+# One notification per agent that starts waiting. Kafra Notifier (built by
+# ./kafra.sh menubar) posts it as "Kafra" and opens the agent when clicked;
+# without it, SwiftBar's own notify is the fallback. The server URL-encodes
+# every field and the notifier decodes them, so nothing here needs quoting.
+NOTIFIER="$KAFRA_DIR/integrations/notifier/build/Kafra Notifier.app"
 touch "$STATE"
 now=$(grep '^#notify ' <<<"$out" | cut -d' ' -f2 | sort)
-while read -r line; do
-  [[ -z "$line" ]] && continue
-  id=$(cut -d' ' -f2 <<<"$line")
-  text=$(cut -d' ' -f3- <<<"$line")
-  if ! grep -qxF "$id" "$STATE"; then
-    osascript -e 'on run argv' -e 'display notification (item 2 of argv) with title (item 1 of argv) sound name "Glass"' -e 'end run' "Kafra" "$text" >/dev/null 2>&1
+while read -r _ id body href; do
+  [[ -z "$id" ]] && continue
+  grep -qxF "$id" "$STATE" && continue
+  if [[ -d "$NOTIFIER" ]]; then
+    open -g -n -a "$NOTIFIER" --args --title Kafra --body "$body" --url "$href" >/dev/null 2>&1
+  else
+    open -g "swiftbar://notify?plugin=kafra.10s.sh&title=Kafra&body=$body&href=$href" >/dev/null 2>&1
   fi
 done < <(grep '^#notify ' <<<"$out")
 # Remember who is waiting now; an agent that stops and waits again notifies again.
