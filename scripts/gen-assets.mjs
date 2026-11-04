@@ -262,7 +262,7 @@ async function buildCharacter(cls) {
 
 /** Screen width, in px, each building's footprint should fill. One tile is 32px wide. */
 const FOOTPRINT_PX = { arena: 2.6 * 32, kafra: 32 * 1.4, tent: 44, castle: 150 };
-const DECOR_PX = { tree: 24, lamp: 8, flowers: 16, bench: 16, palm: 24, pine: 22, campfire: 16, bug1: 26, bug2: 32, bug3: 40 };
+const DECOR_PX = { tree: 24, lamp: 8, flowers: 16, bench: 16, palm: 24, pine: 22, campfire: 16, bug1: 32, bug2: 40, bug3: 50 };
 const FOLDER = { decor: 'decor', tile: 'tiles', icon: 'icons', building: 'buildings' };
 const SECTION = { decor: 'decor', tile: 'tiles', icon: 'icons', building: 'buildings' };
 
@@ -280,6 +280,8 @@ async function installImage(as, kind, src) {
   return {
     image: `${folder}/${as}.png`,
     scale: +(target / width).toFixed(3),
+    // On-screen height of the visible art, for anything placed above it (a name tag).
+    height: +((b.maxY - b.minY + 1) * (target / width)).toFixed(1),
     // Horizontal centre of the art; feet a little above the lowest opaque row,
     // because isometric art's front corner dips below the footprint's centre line.
     anchor: [+((b.minX + b.maxX + 1) / 2 / img.w).toFixed(3), +((b.maxY + 1 - (kind === 'decor' ? 2 : width * 0.25)) / img.h).toFixed(3)],

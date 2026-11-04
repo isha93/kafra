@@ -235,6 +235,33 @@
         0.523,
         0.875
       ]
+    },
+    "bug1": {
+      "image": "decor/bug1.png",
+      "scale": 1.185,
+      "height": 30.8,
+      "anchor": [
+        0.508,
+        0.688
+      ]
+    },
+    "bug2": {
+      "image": "decor/bug2.png",
+      "scale": 0.87,
+      "height": 30.4,
+      "anchor": [
+        0.5,
+        0.828
+      ]
+    },
+    "bug3": {
+      "image": "decor/bug3.png",
+      "scale": 0.794,
+      "height": 38.1,
+      "anchor": [
+        0.508,
+        0.938
+      ]
     }
   },
   "tiles": {

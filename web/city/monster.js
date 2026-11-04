@@ -90,13 +90,15 @@ export class Monster {
       sprite.scale.set(art.scale * (art.flip ? -1 : 1), art.scale);
       this.look.addChild(sprite);
       this.size = 1;
+      this.top = art.height ?? sprite.height;
     } else {
       this.look.addChild(drawBug(new Graphics(), COLORS[level - 1]));
       this.size = 1.25 + 0.2 * (level - 1);
+      this.top = this.look.height * this.size;
     }
     this.tag.removeChildren().forEach((c) => c.destroy());
     const name = label(t('bug.name', { n: bug.streak }), { size: 8, color: level >= 3 ? 0xff8a80 : 0xffe0b2 });
-    name.position.set(0, -this.look.height * this.size - 10);
+    name.position.set(0, -this.top - 14);
     this.tag.addChild(name);
   }
 
