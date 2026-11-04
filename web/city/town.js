@@ -68,6 +68,7 @@ export class Town {
     this.buildings = new Map();
     this.shakes = new Map();
     this.monsters = new Map();          // agent id → its bug in the arena
+    this.levels = new Map();            // class → level last announced, since sessions of a class share one
     this.leavingMonsters = [];
     this.time = 0;
 
@@ -343,6 +344,15 @@ export class Town {
         break;
       }
     }
+    // Sessions of one class share an adventurer: every one of them celebrates, the log says it once.
+    if (before.level && after.level && after.level.level > before.level.level) {
+      sprite.levelUp();
+      const key = after.sprite ?? after.job;
+      if ((this.levels.get(key) ?? 0) < after.level.level) {
+        this.levels.set(key, after.level.level);
+        this.onEvent?.({ town, agent: after, type: 'levelup' });
+      }
+    }
     if (before.kind !== 'waiting' && after.kind === 'waiting' && !after.isParty) {
       this.onEvent?.({ town, agent: after, type: 'waiting' });
     }
@@ -363,7 +373,7 @@ export class Town {
     if (!fresh.length || !prev.commits.length && data.commits.length > 3) return;
     const k = iso(CIVIC.kafra.x, CIVIC.kafra.y);
     this.fx.fireworks(k.x, k.y - 50, k.y + 100);
-    this.fx.popText(k.x, k.y - 70, k.y + 100, 'Level Up!', 0xffd54f, 16);
+    this.fx.popText(k.x, k.y - 70, k.y + 100, t('fx.commit'), 0xffd54f, 16);
     sfxAt('fanfare', this.kafraNpc, this.zoom ?? 1);
     for (const c of fresh) this.onEvent?.({ town: data, type: 'commit', commit: c });
   }

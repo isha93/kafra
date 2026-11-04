@@ -207,6 +207,7 @@ body.city {
 
 .mode { font-weight: 700; color: #2a4f8a; }
 
+.member .m-lv { color: #2f6fd0; }
 .member .m-src { font-weight: 400; font-size: 9px; color: var(--ink-soft); border: 1px solid var(--bevel-dark); padding: 0 3px; border-radius: 2px; }
 
 /* Replay bar: centred between the two side panels. */

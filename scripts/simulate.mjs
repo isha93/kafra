@@ -363,6 +363,8 @@ for (const c of cast) {
 }
 
 process.env.KAFRA_PROJECTS_DIR = PROJECTS;
+// Fake towns earn fake EXP: keep it out of your real ~/.config/kafra/exp.json.
+process.env.KAFRA_EXP_FILE ??= join(tmpdir(), 'kafra-sim-exp.json');
 // Only the simulated transcripts; this machine's real Codex/Gemini sessions stay out.
 process.env.KAFRA_SOURCES ??= 'claude-code';
 process.env.KAFRA_PORT ??= '4319';

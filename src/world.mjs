@@ -3,6 +3,7 @@ import { repoRootOf, repoStats, districtOfFile, commitsBetween } from './repos.m
 import { loadConfig, visible, publicWorld, publicTimelines } from './privacy.mjs';
 import { redact } from './activity.mjs';
 import { serverLang } from '../web/city/i18n.js';
+import { ExpBook } from './exp.mjs';
 
 /** The language of this machine's user; the browser follows it unless told otherwise. */
 const LANG = serverLang();
@@ -142,12 +143,19 @@ async function townsFrom(sessions, config) {
   return out;
 }
 
+/** EXP per adventurer (exp.mjs), opened on the first scan so tests and imports never touch the file. */
+let book = null;
+/** Write EXP now, e.g. on shutdown; scans otherwise save at most every 30 s. */
+export const saveExp = () => book?.dirty && book.save();
+
 export async function buildWorld() {
   // Read first: redaction words are applied while transcripts are parsed.
   const config = loadConfig();
   const { sessions, error, scannedAt } = await listSessions();
   if (error) return { error, towns: [], scannedAt };
-  const world = { towns: await townsFrom(sessions, config), scannedAt, lang: LANG, configError: config.error ?? undefined };
+  const towns = await townsFrom(sessions, config);
+  (book ??= new ExpBook()).observe(towns);
+  const world = { towns, scannedAt, lang: LANG, configError: config.error ?? undefined };
   return config.public ? publicWorld(world) : world;
 }
 

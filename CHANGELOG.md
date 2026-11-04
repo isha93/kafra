@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Base levels. Every class in every town is one adventurer whose EXP adds up
+  across sessions: +1 per successful tool, +3 per file built, +5 per passing
+  test run, +15 more per bug slain. Levels show on name tags, in the party bar
+  and the agent panel; a level-up sets off fireworks and a line in the chat log.
+- Kafra now saves one file, `~/.config/kafra/exp.json`, with EXP numbers and
+  recent tool ids only. Demo and simulation keep theirs in the temp folder.
+- A commit's pop-up now says "Quest Clear!", leaving "Level Up!" to adventurers.
+
 ## v0.1.2 — bugs in the arena
 
 - Failing tests become bugs in the arena. An agent whose latest test run failed

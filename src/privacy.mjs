@@ -97,7 +97,7 @@ function publicAgent(a, districtName) {
     id: opaque(a.id),
     leader: a.leader ? opaque(a.leader) : null,
     source: a.source, model: a.model, job: a.job, sprite: a.sprite,
-    hp: a.hp, tokens: a.tokens, contextWindow: a.contextWindow,
+    hp: a.hp, tokens: a.tokens, contextWindow: a.contextWindow, level: a.level,
     kind: a.kind, status: a.status,
     tool: publicTool(a.tool), tools: (a.tools ?? []).map(publicTool),
     title: '', quest: '', preview: '',

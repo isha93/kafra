@@ -273,7 +273,7 @@ clean_temp() {
   local tmp freed=0
   tmp=$(node -p 'require("os").tmpdir()')
   [[ -n "$tmp" && -d "$tmp" ]] || fail "$(lx "Couldn't find the temp folder." "Folder sementara tidak ditemukan.")"
-  for p in "$tmp"/kafra-sim "$tmp"/kafra-demo-projects "$tmp"/kafra-test-* "$tmp"/kafra-sources-*; do
+  for p in "$tmp"/kafra-sim "$tmp"/kafra-demo-projects "$tmp"/kafra-test-* "$tmp"/kafra-sources-* "$tmp"/kafra-*-exp.json; do
     [[ -e "$p" ]] || continue
     freed=$((freed + $(du -sk "$p" | cut -f1)))
     rm -rf "$p"

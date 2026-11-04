@@ -21,6 +21,7 @@ before(async () => {
   process.env.KAFRA_PROJECTS_DIR = out;
   process.env.KAFRA_CODEX_DIR = join(out, 'no-codex');
   process.env.KAFRA_GEMINI_DIR = join(out, 'no-gemini');
+  process.env.KAFRA_EXP_FILE = join(out, 'exp.json');
   mod = await import('../src/world.mjs');
   world = await mod.buildWorld();
 });

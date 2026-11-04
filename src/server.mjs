@@ -6,7 +6,7 @@ import { PROJECTS_DIR } from './sources/claude-code.mjs';
 import { listSessions } from './sources/index.mjs';
 import { CODEX_DIR } from './sources/codex.mjs';
 import { GEMINI_DIR } from './sources/gemini.mjs';
-import { buildWorld, buildReplay } from './world.mjs';
+import { buildWorld, buildReplay, saveExp } from './world.mjs';
 import { allowedHost, allowedOrigin, SECURITY_HEADERS } from './guard.mjs';
 import { loadConfig, visible, publicSessions, CONFIG_PATH } from './privacy.mjs';
 import { swiftbarText } from './menubar.mjs';
@@ -128,3 +128,6 @@ createServer(async (req, res) => {
   if (config.hide.length || config.only.length || config.redact.length) console.log(`   privacy: ${CONFIG_PATH}`);
   if (config.public) console.log('   PUBLIC MODE: all text, paths and repo names are hidden');
 });
+
+// Ctrl+C and launchd's stop: save EXP earned since the last periodic save.
+for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => { saveExp(); process.exit(0); });

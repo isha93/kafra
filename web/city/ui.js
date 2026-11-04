@@ -49,6 +49,13 @@ function ago(ms) {
 }
 const num = (n) => Number(n ?? 0).toLocaleString(locale());
 
+/** Level, an EXP bar towards the next one, and bugs slain (src/exp.mjs). */
+function levelStat(l) {
+  const pct = l.need ? Math.floor((l.into / l.need) * 100) : 100;
+  const line = l.need ? t('exp.line', { p: pct, next: l.level + 1, n: l.slain }) : t('exp.max', { n: l.slain });
+  return `<div class="stat"><span class="lbl">${t('lbl.level')}</span><b>Lv.${l.level}</b> <span class="hp exp"><i style="width:${pct}%"></i></span> <span class="muted">${esc(line)}</span></div>`;
+}
+
 function hpBar(hp) {
   const cls = hp <= 20 ? 'low' : hp <= 50 ? 'mid' : '';
   return `<span class="hp ${cls}"><i style="width:${hp}%"></i></span>`;
@@ -115,6 +122,7 @@ function agentDetail({ town, agent: a }) {
     </div>
     ${a.title ? `<div class="quest"><span class="lbl">${t('lbl.quest')}</span>${esc(a.title)}</div>` : ''}
     <div class="stat"><span class="lbl">${t('lbl.hp')}</span>${hpBar(a.hp)} <span class="muted">${a.hp}% · ${num(a.tokens)} tok</span></div>
+    ${a.level ? levelStat(a.level) : ''}
     <div class="stat"><span class="lbl">${t('lbl.doing')}</span><span class="kind k-${a.kind}">${icon(a.kind)} ${esc(doing)}</span> ${where}</div>
     <div class="stat"><span class="lbl">${t('lbl.last')}</span><span class="muted">${ago(a.ageMs)}</span></div>
     ${leader ? `<div class="stat"><span class="lbl">${t('lbl.leader')}</span><a href="#" data-agent="${esc(leader.id)}">${esc(leader.job)}</a></div>` : ''}
@@ -289,6 +297,10 @@ export function logEvent(ev, pick) {
       text = t('log.slain', { who, test: ev.tool?.label || ev.tool?.name || '' });
       cls = 'gold';
       break;
+    case 'levelup':
+      text = t('log.levelup', { who, n: ev.agent.level.level });
+      cls = 'gold';
+      break;
     case 'arrive':
       text = t('log.arrive', { who });
       cls = 'sys';
@@ -356,7 +368,7 @@ export function renderParty(snapshot, selection, pick) {
     return `
       <button class="member s-${st} ${sel ? 'sel' : ''}" data-id="${esc(a.id)}" style="--st:${STATUS[st].css}" title="${esc(a.title || '')}">
         ${portrait(a)}
-        <span class="m-name">${esc(memberName(a))}${a.source && a.source !== 'claude-code' ? ` <span class="m-src">${esc(a.sourceName ?? a.source)}</span>` : ''}</span>
+        <span class="m-name">${a.level ? `<span class="m-lv">Lv.${a.level.level}</span> ` : ''}${esc(memberName(a))}${a.source && a.source !== 'claude-code' ? ` <span class="m-src">${esc(a.sourceName ?? a.source)}</span>` : ''}</span>
         <span class="m-town">${esc(town.town)} · ${esc(town.name)}</span>
         <span class="m-act">${memberAction(a)}</span>
         <span class="m-meta"><span class="m-st">${esc(t(`status.${st}`))}</span>

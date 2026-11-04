@@ -178,6 +178,27 @@ The Kafra panel shows each town's progress bars toward the next tier.
 | **★★★★ City on the coast** | **★★★★★ Capital in the desert** |
 | ![A coastal city ringed by sea](docs/images/coast.jpg) | ![A desert capital with a castle, mid "Level Up!"](docs/images/capital.jpg) |
 
+## ⚔️ Base levels and bugs
+
+Every class in every town is one adventurer: all Claude Opus sessions in
+`guild-hall-api` are the same Lord Knight of Einbroch, so its level keeps
+climbing across sessions and days, up to Lv.99.
+
+| Finished tool | EXP |
+|---|---|
+| any successful tool | +1 |
+| a file built | +3 |
+| a passing test run | +5 |
+| a bug slain (a pass right after a failure) | +15 more |
+
+**Bugs.** When an agent's latest test run fails, a bug appears in the Training
+Arena and waits for it: a small yellow beetle, an orange horned one after two
+failures in a row, a red boss after three. The agent's swings make it flinch,
+and the next passing run bursts it with "Clear!".
+
+EXP is earned while Kafra is watching, the way you only earn EXP while logged
+in. With autostart on, that's always.
+
 ## 💫 Status effects
 
 | Ring | Meaning |
@@ -235,6 +256,11 @@ session files and git history, reading backwards only as far as the chosen day
 
 **What Kafra reads.** Only the session files below, plus git metadata. It
 never reads your files' contents, only their paths and counts.
+
+**What Kafra writes.** One small file, `~/.config/kafra/exp.json`: EXP per
+adventurer (keyed by repo path and class) and the ids of each session's recent
+tools, so none is counted twice. No prompts, file names or code. Delete it to
+start everyone again from Lv.1.
 
 | Agent | Sessions |
 |---|---|
@@ -298,7 +324,7 @@ Measured on a MacBook with about 450 sessions on disk:
 
 | Stat | Value |
 |---|---|
-| Disk | ~7 MB in total, and Kafra stores nothing, so it doesn't grow |
+| Disk | ~7 MB in total; the only thing Kafra saves is its EXP file, a few KB |
 | Server RAM | ~75 MB live; ~130 MB with replays open (capped under autostart) |
 | Server CPU | ~0–1%, with short spikes while scanning |
 | Menu bar (SwiftBar) | ~80 MB RAM, ~0% CPU |

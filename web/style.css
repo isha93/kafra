@@ -124,6 +124,7 @@ body {
 }
 .hp.mid i { background: var(--hp-mid); }
 .hp.low i { background: var(--hp-low); }
+.hp.exp i { background: #4f8fe8; }
 .hp-text { font-size: 10px; color: var(--ink-soft); }
 
 .status {

@@ -132,7 +132,8 @@ export class AgentSprite {
 
     if (!prev || prev.kind !== data.kind || this.item === undefined) this.setItem(data.kind);
 
-    this.nameTag.text = data.isParty ? `${data.agentType ?? 'party'}` : data.job;
+    const name = data.isParty ? `${data.agentType ?? 'party'}` : data.job;
+    this.nameTag.text = data.level ? `Lv.${data.level.level} ${name}` : name;
     this.titleTag.text = (data.title || '').slice(0, 30);
     this.drawHp(data.hp);
     this.drawBubble(data.kind, bubbleText(data));
@@ -391,6 +392,15 @@ export class AgentSprite {
   hurt() {
     this.town.fx.popText(this.view.x, this.view.y - 40, this.view.zIndex + 1, 'Miss', 0xff5252, 13);
     sfxAt('miss', this.view, this.zoom ?? 1);
+  }
+
+  /** Its adventurer reached a new level. */
+  levelUp() {
+    const { x, y } = this.view.position;
+    const z = this.view.zIndex + 2;
+    this.town.fx.fireworks(x, y - 30, z);
+    this.town.fx.popText(x, y - 56, z, t('fx.levelup'), 0xffd54f, 15);
+    sfxAt('fanfare', this.view, this.zoom ?? 1);
   }
 
   accent() { return CLASSES[this.data.sprite]?.accent ?? 0xffffff; }
