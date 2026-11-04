@@ -45,6 +45,10 @@ brew install isha93/tap/kafra
 kafra
 ```
 
+Or with npm: `npx @isha93/kafra` to try it, or `npm install -g @isha93/kafra`
+and then `kafra`. Use an installed copy for autostart and the menu bar, since
+`npx` runs from a cache npm may clear.
+
 Or straight from the source, no install:
 
 ```bash
@@ -53,7 +57,7 @@ cd kafra
 ./kafra.sh
 ```
 
-Installed with Homebrew, the command is `kafra`; in a clone it's `./kafra.sh`.
+Installed with Homebrew or npm, the command is `kafra`; in a clone it's `./kafra.sh`.
 Everything below works with either.
 
 - [ ] Your browser opens **http://127.0.0.1:4317**: every repo with an agent becomes a town.
@@ -249,7 +253,7 @@ never reads your files' contents, only their paths and counts.
 
 **Hide what you don't want shown.** Copy `kafra.config.example.json` to
 `kafra.config.json` in your clone (it's gitignored), or to
-`~/.config/kafra/config.json` if you installed Kafra with Homebrew.
+`~/.config/kafra/config.json` if you installed Kafra with Homebrew or npm.
 Changes apply without a restart.
 
 ```json
