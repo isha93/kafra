@@ -75,7 +75,7 @@ export async function loadArt() {
       jobs.push(Assets.load(BASE + entry.image).then(
         (texture) => {
           texture.source.scaleMode = 'nearest';
-          target.set(key, { texture, scale: entry.scale ?? 1, anchor: entry.anchor ?? [0.5, 1] });
+          target.set(key, { texture, scale: entry.scale ?? 1, anchor: entry.anchor ?? [0.5, 1], flip: entry.flip === true });
         },
         (err) => console.warn(`kafra: could not load image ${key}`, err),
       ));

@@ -1,12 +1,14 @@
 /**
  * A bug in the arena: one per agent whose latest test run failed.
  *
- * Drawn in code, like the fallback art: a round beetle facing the fighters on
- * the west side of the arena. It grows and reddens with each failure in a row,
- * flinches when its agent swings, and bursts when a test run passes.
+ * Generated art per failure streak (`bug1`…`bug3` in the decor manifest), or a
+ * beetle drawn in code when that art isn't installed. It faces the fighters on
+ * the west side of the arena, grows meaner with each failure in a row, flinches
+ * when its agent swings, and bursts when a test run passes.
  */
-import { Container, Graphics } from '/vendor/pixi.mjs';
+import { Container, Graphics, Sprite } from '/vendor/pixi.mjs';
 import { label } from './art.js';
+import { decorArt } from './assets.js';
 import { iso } from './layout.js';
 import { t } from './i18n.js';
 
@@ -56,8 +58,8 @@ export class Monster {
     this.view = new Container();
     this.view.addChild(new Graphics().ellipse(0, 0, 12, 4).fill({ color: 0x000000, alpha: 0.28 }));
     this.body = new Container();
-    this.shape = new Graphics();
-    this.body.addChild(this.shape);
+    this.look = new Container();
+    this.body.addChild(this.look);
     this.view.addChild(this.body);
     this.tag = new Container();
     this.view.addChild(this.tag);
@@ -79,11 +81,22 @@ export class Monster {
     const level = Math.min(bug.streak, COLORS.length);
     if (level === this.level) return;
     this.level = level;
-    this.size = 1.25 + 0.2 * (level - 1);
-    drawBug(this.shape, COLORS[level - 1]);
+    this.look.removeChildren().forEach((c) => c.destroy());
+    const art = decorArt.get(`bug${level}`);
+    if (art) {
+      // Generated art is already sized per level by the manifest.
+      const sprite = new Sprite(art.texture);
+      sprite.anchor.set(art.anchor[0], art.anchor[1]);
+      sprite.scale.set(art.scale * (art.flip ? -1 : 1), art.scale);
+      this.look.addChild(sprite);
+      this.size = 1;
+    } else {
+      this.look.addChild(drawBug(new Graphics(), COLORS[level - 1]));
+      this.size = 1.25 + 0.2 * (level - 1);
+    }
     this.tag.removeChildren().forEach((c) => c.destroy());
     const name = label(t('bug.name', { n: bug.streak }), { size: 8, color: level >= 3 ? 0xff8a80 : 0xffe0b2 });
-    name.position.set(0, -38 - 7 * (level - 1));
+    name.position.set(0, -this.look.height * this.size - 10);
     this.tag.addChild(name);
   }
 
@@ -119,7 +132,7 @@ export class Monster {
     let sy = this.size * this.grow * (1 - (1 - hop) * 0.08);
     this.body.y = -hop * 3;
     this.body.x = this.knock * 4;
-    this.shape.tint = this.flash > 0 ? 0xff6060 : 0xffffff;
+    this.look.tint = this.flash > 0 ? 0xff6060 : 0xffffff;
 
     if (this.leaving) {
       this.leftFor += dt;

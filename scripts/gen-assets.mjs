@@ -72,6 +72,10 @@ const ASSETS = {
   palm: { kind: 'decor', n: 2, size: 64, prompt: 'desert palm tree with a sandy base' },
   pine: { kind: 'decor', n: 2, size: 64, prompt: 'snowy pine tree, white snow on branches' },
   campfire: { kind: 'decor', n: 2, size: 64, prompt: 'small campfire with logs and stones, flames' },
+  // Failing tests in the arena, one look per failure streak (web/city/monster.js).
+  bug1: { kind: 'decor', n: 3, size: 64, prompt: 'small round yellow beetle monster, cute big eyes, short antennae, six tiny legs, facing left, rpg field enemy' },
+  bug2: { kind: 'decor', n: 3, size: 64, prompt: 'angry orange horned beetle monster, glaring eyes, sharp mandibles, spiky shell, facing left, rpg enemy' },
+  bug3: { kind: 'decor', n: 3, size: 64, prompt: 'huge red armored beetle boss monster, glowing eyes, giant pincers, black spiked shell, facing left, menacing rpg boss' },
   lamp: { kind: 'decor', n: 4, size: 64, prompt: 'iron street lamp post with a warm glowing lantern' },
   flowers: { kind: 'decor', n: 4, size: 64, prompt: 'small flower bed with red and yellow flowers' },
   bench: { kind: 'decor', n: 4, size: 64, prompt: 'small wooden park bench' },
@@ -258,7 +262,7 @@ async function buildCharacter(cls) {
 
 /** Screen width, in px, each building's footprint should fill. One tile is 32px wide. */
 const FOOTPRINT_PX = { arena: 2.6 * 32, kafra: 32 * 1.4, tent: 44, castle: 150 };
-const DECOR_PX = { tree: 24, lamp: 8, flowers: 16, bench: 16, palm: 24, pine: 22, campfire: 16 };
+const DECOR_PX = { tree: 24, lamp: 8, flowers: 16, bench: 16, palm: 24, pine: 22, campfire: 16, bug1: 26, bug2: 32, bug3: 40 };
 const FOLDER = { decor: 'decor', tile: 'tiles', icon: 'icons', building: 'buildings' };
 const SECTION = { decor: 'decor', tile: 'tiles', icon: 'icons', building: 'buildings' };
 
