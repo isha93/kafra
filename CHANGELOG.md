@@ -9,6 +9,10 @@
   first bug) to Night Owl. An unlock shows a banner and a line in the chat log;
   🏆 in the World Map window lists them all, locked ones with what they take.
   They're saved in the same `exp.json`, as ids and dates.
+- Updates arrive as soon as an agent writes (about a quarter of a second)
+  instead of every 2 seconds. Session folders are watched; a quiet world is
+  rebuilt only every 10 seconds, and every open tab and the menu bar share
+  one scan.
 
 ## v0.1.3 — base levels
 

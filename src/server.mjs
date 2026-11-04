@@ -10,6 +10,7 @@ import { buildWorld, buildReplay, saveExp } from './world.mjs';
 import { allowedHost, allowedOrigin, SECURITY_HEADERS } from './guard.mjs';
 import { loadConfig, visible, publicSessions, CONFIG_PATH } from './privacy.mjs';
 import { swiftbarText } from './menubar.mjs';
+import { startWatching, changeVersion, nextChange } from './watch.mjs';
 
 /** The party window's sessions, through the same privacy rules as the world. */
 async function sessionsView() {
@@ -34,7 +35,9 @@ const WEB = resolve(fileURLToPath(new URL('../web/', import.meta.url)));
 
 // PixiJS lives in web/vendor/ (see scripts/vendor-pixi.mjs) and is served
 // like any other static file: no node_modules at runtime.
-const POLL_MS = 2000;
+
+/** A burst of writes (an agent mid-turn) rebuilds the world at most this often. */
+const MIN_GAP_MS = 1500;
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -83,10 +86,15 @@ async function stream(res, produce) {
   res.on('close', () => { alive = false; });
 
   while (alive) {
+    const started = Date.now();
+    const seen = changeVersion();
     const payload = await produce();
     if (!alive) break;
     res.write(`data: ${JSON.stringify(payload)}\n\n`);
-    await new Promise((r) => setTimeout(r, POLL_MS));
+    // Sleep until an agent writes (watch.mjs), then let the burst settle.
+    await nextChange(seen);
+    const gap = MIN_GAP_MS - (Date.now() - started);
+    await new Promise((r) => setTimeout(r, Math.max(250, gap)));
   }
 }
 
@@ -123,6 +131,8 @@ createServer(async (req, res) => {
 }).listen(PORT, HOST, () => {
   console.log(`⚔  Kafra is ready at http://${HOST}:${PORT}`);
   console.log(`   reading (read-only): ${PROJECTS_DIR}, ${CODEX_DIR}, ${GEMINI_DIR}`);
+  const watched = startWatching([PROJECTS_DIR, CODEX_DIR, GEMINI_DIR]);
+  console.log(watched ? '   updates: as soon as an agent writes' : '   updates: every 2 s (folders can\'t be watched here)');
   const config = loadConfig();
   if (config.error) console.log(`   ⚠ ${config.error}`);
   if (config.hide.length || config.only.length || config.redact.length) console.log(`   privacy: ${CONFIG_PATH}`);

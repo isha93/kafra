@@ -333,7 +333,7 @@ Measured on a MacBook with about 450 sessions on disk:
 |---|---|
 | Disk | ~7 MB in total; the only thing Kafra saves is its EXP and achievements file, a few KB |
 | Server RAM | ~75 MB live; ~130 MB with replays open (capped under autostart) |
-| Server CPU | ~0–1%, with short spikes while scanning |
+| Server CPU | ~0% while agents are quiet (a scan every 10 s); it wakes within ~¼ s when one writes |
 | Menu bar (SwiftBar) | ~80 MB RAM, ~0% CPU |
 | Browser tab | the heaviest part, because it animates at 60 fps, but only while it's open |
 

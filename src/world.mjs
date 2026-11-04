@@ -148,7 +148,22 @@ let book = null;
 /** Write EXP now, e.g. on shutdown; scans otherwise save at most every 30 s. */
 export const saveExp = () => book?.dirty && book.save();
 
-export async function buildWorld() {
+/**
+ * Every open tab and the menu bar ask for the world; streams that wake for
+ * the same write share one build instead of each scanning the disk.
+ */
+let building = null;
+let built = { at: 0, world: null };
+export function buildWorld() {
+  if (building) return building;
+  if (built.world && Date.now() - built.at < 500) return Promise.resolve(built.world);
+  building = scanWorld()
+    .then((world) => { built = { at: Date.now(), world }; return world; })
+    .finally(() => { building = null; });
+  return building;
+}
+
+async function scanWorld() {
   // Read first: redaction words are applied while transcripts are parsed.
   const config = loadConfig();
   const { sessions, error, scannedAt } = await listSessions();

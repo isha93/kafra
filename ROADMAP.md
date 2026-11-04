@@ -25,6 +25,7 @@ would change that is opt-in and listed last.
 - EXP and base levels per class per town
 - Tier-up animation: construction, then fireworks
 - Achievements, with an unlock banner and a list
+- `fs.watch` instead of polling every 2 s
 - Privacy: `kafra.config.json` (hide / only / redact) and public mode
 - Synthesised sound: positional effects per activity, and generative
   background music per biome
@@ -65,7 +66,6 @@ would change that is opt-in and listed last.
 
 - [x] Bounded memory: replay cache of 3 days / 10 min, heap capped under autostart
 - [x] Tests clean up after themselves; `./kafra.sh clean` for temp files
-- [ ] `fs.watch` instead of polling every 2 s
 - [ ] Browser tests for the city (Playwright)
 - [ ] Colour-blind palette and reduced-motion mode
 
