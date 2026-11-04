@@ -14,7 +14,7 @@
 ![Agents: Claude · Codex · Gemini · Cursor · OpenCode · Aider](https://img.shields.io/badge/agents-Claude%20·%20Codex%20·%20Gemini%20·%20Cursor%20·%20OpenCode%20·%20Aider-orange)
 ![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)
 
-![The world of Kafra: six towns on one island, a party bar of agents, and the Kafra Service panel](docs/images/world.jpg)
+![A town grows into a capital, a Lord Knight fights a failing test's bug in the arena, slays it and levels up](docs/images/demo.gif)
 
 </div>
 
@@ -94,6 +94,8 @@ system language, and you can switch with 🌐 (remembered per browser), add
 ---
 
 ## 🗺️ The world of Rune-Midgard
+
+![The world of Kafra: six towns on one island, a party bar of agents, and the Kafra Service panel](docs/images/world.jpg)
 
 | Your world | In Kafra |
 |---|---|
