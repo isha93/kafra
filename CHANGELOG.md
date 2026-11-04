@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.1.2 — bugs in the arena
 
 - Failing tests become bugs in the arena. An agent whose latest test run failed
   has a bug waiting for it; the bug grows and reddens with each failure in a
