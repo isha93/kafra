@@ -133,7 +133,7 @@ export const replay = {
     $('rb-day').value = isoDay(from);
     let data;
     try {
-      const res = await fetch(`/api/replay?from=${from}&to=${to}`);
+      const res = await fetch(`api/replay?from=${from}&to=${to}`);
       if (!res.ok) throw new Error(await res.text());
       data = await res.json();
     } catch (err) {

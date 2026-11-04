@@ -5,7 +5,7 @@
  * display rate in between, so walking and swinging stay smooth while the data
  * underneath is coarse.
  */
-import { Application, Container, TextureSource } from '/vendor/pixi.mjs';
+import { Application, Container, TextureSource } from '../vendor/pixi.mjs';
 import { Town, growthKey } from './town.js';
 import { iso, SIZE } from './layout.js';
 import { layoutWorld, drawWorld, townCentre, TownMarker, Traveler } from './world.js';
@@ -349,7 +349,7 @@ document.getElementById('news-open').onclick = async () => {
 };
 app.ticker.add((ticker) => replay.tick(Math.min(0.1, ticker.deltaMS / 1000)));
 
-const source = new EventSource('/api/world/stream');
+const source = new EventSource('api/world/stream');
 source.onopen = () => ui.logSystem(t('log.connected'));
 source.onmessage = (e) => {
   ui.setStatus(t('conn.live'), true);

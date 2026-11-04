@@ -5,7 +5,7 @@
  * maps defined below and the buildings are flat isometric boxes. See the asset
  * note in README.md before replacing any of this with real sprites.
  */
-import { Graphics, Texture, Container, Text } from '/vendor/pixi.mjs';
+import { Graphics, Texture, Container, Text } from '../vendor/pixi.mjs';
 import { TW, TH } from './layout.js';
 
 /* ── Characters ─────────────────────────────────────────────────────────── */

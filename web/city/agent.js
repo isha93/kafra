@@ -5,7 +5,7 @@
  * here is about making that legible at a glance — a hammer at a building means
  * it is writing files there, a book at the library means it is reading.
  */
-import { Container, Sprite, Graphics, Text } from '/vendor/pixi.mjs';
+import { Container, Sprite, Graphics, Text } from '../vendor/pixi.mjs';
 import { itemGraphic, label, CLASSES } from './art.js';
 import { bodyFrame, animates } from './skin.js';
 import { iconFor } from './assets.js';

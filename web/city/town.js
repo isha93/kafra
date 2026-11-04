@@ -5,7 +5,7 @@
  * are redrawn only when their stats change, and agents are patched in place so
  * they keep walking smoothly across server updates.
  */
-import { Container, Graphics, Sprite } from '/vendor/pixi.mjs';
+import { Container, Graphics, Sprite } from '../vendor/pixi.mjs';
 import {
   districtBuilding, scaffolding, library, workshop, inn, arena,
   kafraBooth, warpPortal, label, signboard, levelOf,

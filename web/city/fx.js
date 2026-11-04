@@ -4,7 +4,7 @@
  * One pool per town layer. Particles are plain Graphics updated by hand; at the
  * counts a few agents produce, a particle engine would be more code than this.
  */
-import { Graphics, Text } from '/vendor/pixi.mjs';
+import { Graphics, Text } from '../vendor/pixi.mjs';
 
 export class Fx {
   constructor(layer) {

@@ -2,7 +2,7 @@
  * Townsfolk. They are not agents and carry no data — they wander the roads so
  * a quiet town still looks lived in, the way SimCity fills streets with cars.
  */
-import { Container, Sprite, Graphics } from '/vendor/pixi.mjs';
+import { Container, Sprite, Graphics } from '../vendor/pixi.mjs';
 import { bodyFrame } from './skin.js';
 import { iso, route, ROADS } from './layout.js';
 

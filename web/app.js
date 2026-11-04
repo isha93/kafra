@@ -119,7 +119,7 @@ function render({ sessions = [], scannedAt, error }) {
     .forEach((el) => rowsEl.append(el));
 }
 
-const source = new EventSource('/api/stream');
+const source = new EventSource('api/stream');
 source.onmessage = (e) => {
   connEl.textContent = 'live';
   connEl.className = 'conn on';

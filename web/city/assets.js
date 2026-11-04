@@ -5,9 +5,9 @@
  * That lets AI-generated or commissioned art land one file at a time: drop in a
  * knight sheet and only knights change. The format is in web/assets/README.md.
  */
-import { Assets, Spritesheet, Texture } from '/vendor/pixi.mjs';
+import { Assets, Spritesheet, Texture } from '../vendor/pixi.mjs';
 
-const BASE = '/assets/';
+const BASE = new URL('../assets/', import.meta.url).href;
 
 /** class → { sheet, scale, anchor } */
 export const characterSheets = new Map();

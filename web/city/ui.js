@@ -399,7 +399,7 @@ const memberName = (a) => (a.isParty ? a.agentType ?? 'party' : a.job);
 function portrait(a) {
   const look = sheetFor(a.sprite);
   if (!look) return '<span class="portrait none"></span>';
-  const url = `url('/assets/characters/${esc(look.sheet)}.png')`;
+  const url = `url('assets/characters/${esc(look.sheet)}.png')`;
   // A borrowed sheet is recoloured the way the city tints it (skin.js).
   const tint = look.tint ? `;--tint:#${look.tint.toString(16).padStart(6, '0')};--sheet:${url}` : '';
   return `<span class="portrait${look.tint ? ' tinted' : ''}" style="background-image:${url}${tint}"></span>`;

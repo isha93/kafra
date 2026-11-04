@@ -6,7 +6,7 @@
  * the west side of the arena, grows meaner with each failure in a row, flinches
  * when its agent swings, and bursts when a test run passes.
  */
-import { Container, Graphics, Sprite } from '/vendor/pixi.mjs';
+import { Container, Graphics, Sprite } from '../vendor/pixi.mjs';
 import { label } from './art.js';
 import { decorArt } from './assets.js';
 import { iso } from './layout.js';

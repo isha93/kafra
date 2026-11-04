@@ -6,7 +6,7 @@
  * Positions are tiles in one global isometric space, the same space each
  * town's own tiles live in, offset by the town's origin.
  */
-import { Container, Graphics, Text, Sprite } from '/vendor/pixi.mjs';
+import { Container, Graphics, Text, Sprite } from '../vendor/pixi.mjs';
 import { iso, SIZE } from './layout.js';
 import { label } from './art.js';
 import { seeded } from './decor.js';

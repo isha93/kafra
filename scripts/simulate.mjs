@@ -11,7 +11,7 @@
  */
 import { mkdirSync, writeFileSync, appendFileSync, rmSync, realpathSync, existsSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-import { join, dirname } from 'node:path';
+import { join, dirname, basename } from 'node:path';
 import { tmpdir } from 'node:os';
 
 const ROOT = join(tmpdir(), 'kafra-sim');
@@ -108,7 +108,7 @@ class Agent {
     this.repo = repo;
     this.model = model;
     this.sessionId = sessionId ?? `sim-${++ids}`;
-    this.file = file ?? join(PROJECTS, repo.replace(/\//g, '-'), `${this.sessionId}.jsonl`);
+    this.file = file ?? join(PROJECTS, repo.replace(/[\\/:]/g, '-'), `${this.sessionId}.jsonl`);
     this.sidechain = sidechain;
     this.tokens = 60_000 + Math.random() * 80_000;
     mkdirSync(dirname(this.file), { recursive: true });
@@ -306,7 +306,7 @@ async function runSteps(agent, steps, repoDir) {
 
 /** Subagents explore whatever exists in the leader's repo. */
 function subagentSteps(repoDir) {
-  const name = Object.keys(REPOS).find((n) => repoDir.endsWith(`/${n}`));
+  const name = Object.keys(REPOS).find((n) => basename(repoDir) === n);
   if (name === 'market-web') return SUBAGENT_STEPS;
   const files = REPOS[name];
   return [['Grep', { pattern: 'class|function|struct' }, 2], ...[pick(files), pick(files), pick(files)].map((f) => ['Read', { file_path: f }, 3])];

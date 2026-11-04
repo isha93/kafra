@@ -4,7 +4,7 @@
  * Placement is seeded by the town id, so a town keeps the same trees across
  * reloads and two towns never look copy-pasted.
  */
-import { Container, Sprite } from '/vendor/pixi.mjs';
+import { Container, Sprite } from '../vendor/pixi.mjs';
 import * as drawn from './art.js';
 import { decorArt } from './assets.js';
 import { lookOf } from './land.js';

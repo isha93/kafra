@@ -5,7 +5,7 @@
  * them. Everything here is drawn once per town and rebuilt if any of the three
  * changes, which in practice is rare.
  */
-import { Container, Graphics, FillPattern, Matrix } from '/vendor/pixi.mjs';
+import { Container, Graphics, FillPattern, Matrix } from '../vendor/pixi.mjs';
 import { diamond } from './art.js';
 import { TW, TH, SIZE, ROADS, iso } from './layout.js';
 import { tileArt } from './assets.js';
