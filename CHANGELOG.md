@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.2.0 — more agents, achievements and a faster world
 
 - A town that grows a tier now celebrates: every building rises out of the
   ground in dust and sparks, a capital's castle last, then fireworks and a

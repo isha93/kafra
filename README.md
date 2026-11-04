@@ -209,6 +209,10 @@ runs in a row, Architect, Veteran and Hero, Full Party, Busy Guild, Multiclass,
 Kingdom, City Builder, Capital, and Night Owl. An unlock shows a banner; 🏆 in
 the World Map window lists them all.
 
+| A Lv.2 bug in the Training Arena | 🏆 Achievements |
+|:-:|:-:|
+| ![An Assassin Cross fights an orange Lv.2 bug while its tests fail](docs/images/arena.jpg) | ![The achievements list, eight of fourteen unlocked](docs/images/achievements.jpg) |
+
 ## 💫 Status effects
 
 | Ring | Meaning |
