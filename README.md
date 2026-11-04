@@ -199,6 +199,12 @@ and the next passing run bursts it with "Clear!".
 EXP is earned while Kafra is watching, the way you only earn EXP while logged
 in. With autostart on, that's always.
 
+**Achievements.** Fourteen of them for your whole world: First Blood,
+Exterminator and Bug Hunter for slaying bugs, Green Streak for five passing
+runs in a row, Architect, Veteran and Hero, Full Party, Busy Guild, Multiclass,
+Kingdom, City Builder, Capital, and Night Owl. An unlock shows a banner; 🏆 in
+the World Map window lists them all.
+
 ## 💫 Status effects
 
 | Ring | Meaning |
@@ -258,8 +264,9 @@ session files and git history, reading backwards only as far as the chosen day
 never reads your files' contents, only their paths and counts.
 
 **What Kafra writes.** One small file, `~/.config/kafra/exp.json`: EXP per
-adventurer (keyed by repo path and class) and the ids of each session's recent
-tools, so none is counted twice. No prompts, file names or code. Delete it to
+adventurer (keyed by repo path and class), the ids of each session's recent
+tools so none is counted twice, a few running totals, and the dates
+achievements were unlocked. No prompts, file names or code. Delete it to
 start everyone again from Lv.1.
 
 | Agent | Sessions |
@@ -324,7 +331,7 @@ Measured on a MacBook with about 450 sessions on disk:
 
 | Stat | Value |
 |---|---|
-| Disk | ~7 MB in total; the only thing Kafra saves is its EXP file, a few KB |
+| Disk | ~7 MB in total; the only thing Kafra saves is its EXP and achievements file, a few KB |
 | Server RAM | ~75 MB live; ~130 MB with replays open (capped under autostart) |
 | Server CPU | ~0–1%, with short spikes while scanning |
 | Menu bar (SwiftBar) | ~80 MB RAM, ~0% CPU |

@@ -155,7 +155,7 @@ export async function buildWorld() {
   if (error) return { error, towns: [], scannedAt };
   const towns = await townsFrom(sessions, config);
   (book ??= new ExpBook()).observe(towns);
-  const world = { towns, scannedAt, lang: LANG, configError: config.error ?? undefined };
+  const world = { towns, achievements: book.list(), scannedAt, lang: LANG, configError: config.error ?? undefined };
   return config.public ? publicWorld(world) : world;
 }
 

@@ -238,6 +238,9 @@ export function showDetail(sel, snapshot) {
   } else if (sel?.type === 'civic') {
     const town = snapshot.towns.find((x) => x.id === sel.town);
     if (town) html = civicDetail(town, sel.key);
+  } else if (sel?.type === 'achievements') {
+    html = achievementsDetail(achievements);
+    head.textContent = t('ach.title');
   }
   // Skip identical re-renders so a text selection survives the 2s poll.
   if (el.dataset.html !== html) {
@@ -335,6 +338,57 @@ export function logSystem(text) {
   line.className = 'line sys';
   line.textContent = text;
   $('log').append(line);
+}
+
+/* ── Achievements ───────────────────────────────────────────────────────── */
+
+const ACH_ICON = {
+  'first-blood': '🗡️', exterminator: '🪲', 'bug-hunter': '🏹', 'green-streak': '🍀', architect: '🏗️',
+  veteran: '🎖️', hero: '👑', 'full-party': '🛡️', 'busy-guild': '⚒️', multiclass: '🔮',
+  kingdom: '🗺️', 'city-builder': '🏙️', capital: '🏰', 'night-owl': '🦉',
+};
+const achIcon = (id) => ACH_ICON[id] ?? '🏆';
+
+/** From the live world, so the list stays right while a replay is showing. */
+let achievements = [];
+export function setAchievements(list) { achievements = list ?? []; }
+
+/** Every achievement, unlocked ones with their date, locked ones greyed with what it takes. */
+function achievementsDetail(list) {
+  const got = list.filter((a) => a.at).length;
+  return `<div class="sub">${t('ach.count', { n: got, total: list.length })}</div>
+    <ul class="ach">${list.map((a) => `<li class="${a.at ? 'got' : 'locked'}"><span class="ach-icon">${achIcon(a.id)}</span>
+      <span><b>${esc(t(`ach.${a.id}`))}</b><br><span class="muted">${esc(t(`ach.${a.id}.d`))}${a.at ? ` · ${new Date(a.at).toLocaleDateString(locale())}` : ''}</span></span></li>`).join('')}</ul>`;
+}
+
+/** Unlocks queue up, so several at once show one after another. */
+const toasts = [];
+let toasting = false;
+
+export function achievementUnlocked(id) {
+  const line = document.createElement('div');
+  line.className = 'line gold';
+  line.textContent = `🏆 ${t('ach.unlocked')}: ${t(`ach.${id}`)}`;
+  const log = $('log');
+  log.append(line);
+  log.scrollTop = log.scrollHeight;
+  toasts.push(id);
+  if (!toasting) nextToast();
+}
+
+function nextToast() {
+  const el = $('toast');
+  const id = toasts.shift();
+  toasting = Boolean(id);
+  if (!id) { el.hidden = true; return; }
+  el.innerHTML = `<span class="ach-icon">${achIcon(id)}</span><span><span class="muted">${esc(t('ach.unlocked'))}</span><br><b>${esc(t(`ach.${id}`))}</b> · ${esc(t(`ach.${id}.d`))}</span>`;
+  el.hidden = false;
+  // Restart the slide-in for each toast.
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = '';
+  if (!quiet()) sfx('fanfare');
+  setTimeout(nextToast, 4500);
 }
 
 /* ── Party bar ──────────────────────────────────────────────────────────── */

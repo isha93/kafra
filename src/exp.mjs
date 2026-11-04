@@ -7,10 +7,12 @@
  * from the recent tools every source already reports.
  *
  * Only numbers are saved, to ~/.config/kafra/exp.json (or KAFRA_EXP_FILE):
- * EXP per adventurer, and per session the ids of recent tools already counted.
- * No prompts, paths or code.
+ * EXP per adventurer, per session the ids of recent tools already counted,
+ * running totals and unlocked achievements (achievements.mjs). No prompts,
+ * file names or code.
  */
 import { readFileSync, writeFileSync, mkdirSync, renameSync } from 'node:fs';
+import { ACHIEVEMENTS, worldStats, newlyUnlocked } from './achievements.mjs';
 import { dirname, join } from 'node:path';
 import { homedir } from 'node:os';
 
@@ -52,12 +54,16 @@ export class ExpBook {
     this.path = path;
     this.adventurers = {};  // "<town root>|<class>" → { exp, slain }
     this.sessions = {};     // session id → { ids: counted tool ids still in its recent window, seen }
+    this.totals = { slain: 0, built: 0, passed: 0, bestStreak: 0, night: 0 };
+    this.achievements = {}; // id → when it was unlocked (ms)
     this.dirty = false;
     this.savedAt = 0;
     try {
       const raw = JSON.parse(readFileSync(path, 'utf8'));
       this.adventurers = raw.adventurers ?? {};
       this.sessions = raw.sessions ?? {};
+      this.totals = { ...this.totals, ...raw.totals };
+      this.achievements = raw.achievements ?? {};
     } catch { /* first run, or unreadable: start fresh */ }
   }
 
@@ -77,9 +83,8 @@ export class ExpBook {
           window.add(t.id);
           if (!t.done) continue;
           if (!counted.has(t.id)) {
-            const gain = expOf(t, failing);
-            hero.exp += gain;
-            if (t.kind === 'trial' && !t.error && failing) hero.slain++;
+            hero.exp += expOf(t, failing);
+            this.tally(hero, t, failing);
             counted.add(t.id);
             this.dirty = true;
           }
@@ -91,7 +96,37 @@ export class ExpBook {
       }
     }
     for (const [id, s] of Object.entries(this.sessions)) if (now - s.seen > FORGET_MS) delete this.sessions[id];
+    this.unlock(towns, now);
     if (this.dirty && now - this.savedAt > SAVE_EVERY_MS) this.save(now);
+  }
+
+  /** Running totals and per-adventurer streaks, for achievements. */
+  tally(hero, t, failing) {
+    const tot = this.totals;
+    if (t.kind === 'trial') {
+      hero.streak = t.error ? 0 : (hero.streak ?? 0) + 1;
+      tot.bestStreak = Math.max(tot.bestStreak, hero.streak);
+    }
+    if (t.error) return;
+    if (t.kind === 'build') tot.built++;
+    if (t.kind === 'trial') tot.passed++;
+    if (t.kind === 'trial' && failing) { hero.slain++; tot.slain++; }
+    const hour = new Date(Date.parse(t.at)).getHours();
+    if (hour < 4) tot.night++;
+  }
+
+  /** Unlock whatever the totals and the world now qualify for. */
+  unlock(towns, now) {
+    const maxLevel = Math.max(1, ...Object.values(this.adventurers).map((h) => levelOf(h.exp).level));
+    for (const id of newlyUnlocked({ ...this.totals, maxLevel, ...worldStats(towns) }, this.achievements)) {
+      this.achievements[id] = now;
+      this.dirty = true;
+    }
+  }
+
+  /** Every achievement in order, with when it was unlocked or null, for the world snapshot. */
+  list() {
+    return ACHIEVEMENTS.map(({ id }) => ({ id, at: this.achievements[id] ?? null }));
   }
 
   /** Write atomically; a failed write is retried on a later scan. */
@@ -99,7 +134,9 @@ export class ExpBook {
     try {
       mkdirSync(dirname(this.path), { recursive: true });
       const tmp = `${this.path}.tmp`;
-      writeFileSync(tmp, JSON.stringify({ version: 1, adventurers: this.adventurers, sessions: this.sessions }));
+      writeFileSync(tmp, JSON.stringify({
+        version: 1, adventurers: this.adventurers, sessions: this.sessions, totals: this.totals, achievements: this.achievements,
+      }));
       renameSync(tmp, this.path);
       this.dirty = false;
       this.savedAt = now;

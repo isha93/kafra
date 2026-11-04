@@ -66,3 +66,47 @@ test('EXP and counted tools survive a restart', () => {
   again.observe([town([a])]);
   assert.equal(a.level.exp, EXP.build + EXP.tool);
 });
+
+test('achievements unlock once, from totals and from the world as it is', async () => {
+  const { worldStats, newlyUnlocked } = await import('../src/achievements.mjs');
+  const file = tmpFile();
+  const book = new ExpBook(file);
+  // A fixed test slays a bug: First Blood.
+  book.observe([town([agent('s1', [tool('b', 'trial'), tool('a', 'trial', { error: true })])])], 1000);
+  const unlocked = () => book.list().filter((a) => a.at);
+  assert.deepEqual(unlocked(), [{ id: 'first-blood', at: 1000 }]);
+  book.observe([town([agent('s1', [tool('b', 'trial'), tool('a', 'trial', { error: true })])])], 2000);
+  assert.equal(unlocked()[0].at, 1000);
+
+  // A leader with three subagents, three working agents, two kinds of agent.
+  const leader = { id: 'L', source: 'claude-code', status: 'active', tools: [] };
+  const members = ['1', '2', '3'].map((n) => ({ id: `L/${n}`, leader: 'L', source: 'claude-code', status: 'active', tools: [] }));
+  const wizard = { id: 'W', source: 'codex', status: 'idle', tools: [] };
+  const stats = worldStats([{ root: '/r', tier: { stars: 4 }, agents: [leader, ...members, wizard] }]);
+  assert.equal(stats.maxParty, 3);
+  assert.equal(stats.sources, 2);
+  assert.deepEqual(newlyUnlocked({ ...stats, slain: 0, built: 0, bestStreak: 0, maxLevel: 1, night: 0 }, {}).sort(),
+    ['busy-guild', 'city-builder', 'full-party', 'multiclass']);
+
+  book.save();
+  assert.ok(new ExpBook(file).achievements['first-blood']);
+});
+
+test('five passing test runs in a row make a green streak', () => {
+  const book = new ExpBook(tmpFile());
+  const runs = ['5', '4', '3', '2', '1'].map((id) => tool(id, 'trial'));
+  book.observe([town([agent('s1', runs)])]);
+  assert.equal(book.totals.bestStreak, 5);
+  assert.ok(book.achievements['green-streak']);
+});
+
+test('every achievement has a name and a description in both languages', async () => {
+  const { ACHIEVEMENTS } = await import('../src/achievements.mjs');
+  const { makeT } = await import('../web/city/i18n.js');
+  for (const lang of ['en', 'id']) {
+    const t = makeT(lang);
+    for (const { id } of ACHIEVEMENTS) {
+      for (const key of [`ach.${id}`, `ach.${id}.d`]) assert.notEqual(t(key), key, `${lang} ${key}`);
+    }
+  }
+});

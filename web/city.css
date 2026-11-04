@@ -23,7 +23,8 @@ body.city {
 .panel a.count { color: #fff; text-decoration: none; }
 .panel a.count:hover { text-decoration: underline; }
 
-.worldmap { top: 12px; left: 12px; width: 250px; }
+.worldmap { top: 12px; left: 12px; width: 292px; }
+.worldmap .title, .worldmap .count { white-space: nowrap; }
 .info { top: 12px; right: 12px; width: 340px; max-height: calc(100vh - 24px); }
 .chat { bottom: 12px; left: 12px; width: 380px; height: 170px; opacity: .94; }
 .partybar { bottom: 12px; left: 404px; right: 12px; max-height: 170px; }
@@ -212,7 +213,21 @@ body.city {
 
 /* Replay bar: centred between the two side panels. */
 .replaybar { top: 12px; left: 274px; right: 364px; }
-.replaybar[hidden], .news[hidden] { display: none; }
+.replaybar[hidden], .news[hidden], .toast[hidden] { display: none; }
+
+/* Achievements: the list in the detail panel, and the unlock toast. */
+.ach { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px; }
+.ach li { display: flex; gap: 8px; align-items: flex-start; }
+.ach li.locked { opacity: .45; filter: grayscale(1); }
+.ach-icon { font-size: 20px; line-height: 1; }
+.toast {
+  position: fixed; top: 64px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 10px; align-items: center; padding: 10px 16px; max-width: min(460px, calc(100vw - 32px));
+  z-index: 50; animation: toast-in .4s ease-out;
+}
+.toast .ach-icon { font-size: 30px; }
+@keyframes toast-in { from { transform: translate(-50%, -24px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }
 .rb-row { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: var(--parchment-dim); }
 .rb-btn {
   all: unset; cursor: pointer; padding: 2px 8px; font-size: 13px;

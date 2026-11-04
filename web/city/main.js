@@ -341,6 +341,7 @@ replay.bind({
   onLoad: (data) => { replay.rendered = false; ui.logSystem(t('log.replay', { date: new Date(data.from).toLocaleDateString(locale()) })); },
   onNews: openNews,
 });
+document.getElementById('ach-open').onclick = () => select({ type: 'achievements' });
 document.getElementById('replay-open').onclick = () => (replay.active ? replay.close() : replay.open());
 document.getElementById('news-open').onclick = async () => {
   if (!replay.active) await replay.open();
@@ -352,7 +353,14 @@ const source = new EventSource('/api/world/stream');
 source.onopen = () => ui.logSystem(t('log.connected'));
 source.onmessage = (e) => {
   ui.setStatus(t('conn.live'), true);
+  const before = liveSnapshot;
   liveSnapshot = JSON.parse(e.data);
+  ui.setAchievements(liveSnapshot.achievements);
+  // New unlocks since the last update; on the first one, everything is old news.
+  if (before) {
+    const had = new Set((before.achievements ?? []).filter((a) => a.at).map((a) => a.id));
+    for (const a of liveSnapshot.achievements ?? []) if (a.at && !had.has(a.id)) ui.achievementUnlocked(a.id);
+  }
   // Follow the server's language (your Mac's) unless this browser chose one.
   if (adoptServerLang(liveSnapshot.lang)) relabel();
   // While replaying, the live world waits in the wings.

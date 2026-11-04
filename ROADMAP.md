@@ -24,6 +24,7 @@ would change that is opt-in and listed last.
 - Failing tests become bugs in the arena until a run passes
 - EXP and base levels per class per town
 - Tier-up animation: construction, then fireworks
+- Achievements, with an unlock banner and a list
 - Privacy: `kafra.config.json` (hide / only / redact) and public mode
 - Synthesised sound: positional effects per activity, and generative
   background music per biome
@@ -58,7 +59,6 @@ would change that is opt-in and listed last.
 
 ## 5. Game layer
 
-- [ ] Achievements: first commit, green streaks, a town reaching City
 - [ ] Statues for releases and git tags
 
 ## 6. Quality

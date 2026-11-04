@@ -5,6 +5,10 @@
 - A town that grows a tier now celebrates: every building rises out of the
   ground in dust and sparks, a capital's castle last, then fireworks and a
   "★★★ Town!" banner, with a line in the chat log.
+- Achievements: 14 of them for your whole world, from First Blood (slay your
+  first bug) to Night Owl. An unlock shows a banner and a line in the chat log;
+  🏆 in the World Map window lists them all, locked ones with what they take.
+  They're saved in the same `exp.json`, as ids and dates.
 
 ## v0.1.3 — base levels
 
