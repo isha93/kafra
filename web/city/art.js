@@ -60,6 +60,9 @@ export const CLASSES = {
   kafra: { h: '#5a3a22', b: '#2a3f7a', d: '#ffffff', accent: 0xe8a0b8 },
   wizard: { h: '#1f2a6b', b: '#2e3f9a', d: '#c0c8e0', accent: 0x3949ab },
   sage: { h: '#d8e4f8', b: '#5b8fd6', d: '#ffffff', accent: 0x64b5f6 },
+  whitesmith: { h: '#6e5840', b: '#d4a017', d: '#f0e0c0', accent: 0xf0b429 },
+  champion: { h: '#3a2a20', b: '#c0392b', d: '#f5d0c0', accent: 0xe74c3c },
+  gunslinger: { h: '#5a4630', b: '#a0784a', d: '#e8d8b8', accent: 0xc8a165 },
   // Townsfolk: ambient, never an agent.
   villager1: { h: '#c47a3a', b: '#8aa05a', d: '#e8dcc0', accent: 0 },
   villager2: { h: '#3a2a1a', b: '#c8a050', d: '#7a5230', accent: 0 },

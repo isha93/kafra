@@ -5,7 +5,8 @@
  * canvas text is not.
  */
 
-import { iconFor, characterSheets } from './assets.js';
+import { iconFor } from './assets.js';
+import { sheetFor } from './skin.js';
 import { repoLabel, districtLabel } from './town.js';
 import { STATUS, statusOf, since, duration } from './status.js';
 import { sfx, setSfx, setMusic } from './audio.js';
@@ -396,8 +397,12 @@ function nextToast() {
 const memberName = (a) => (a.isParty ? a.agentType ?? 'party' : a.job);
 
 function portrait(a) {
-  if (!characterSheets.has(a.sprite)) return '<span class="portrait none"></span>';
-  return `<span class="portrait" style="background-image:url('/assets/characters/${esc(a.sprite)}.png')"></span>`;
+  const look = sheetFor(a.sprite);
+  if (!look) return '<span class="portrait none"></span>';
+  const url = `url('/assets/characters/${esc(look.sheet)}.png')`;
+  // A borrowed sheet is recoloured the way the city tints it (skin.js).
+  const tint = look.tint ? `;--tint:#${look.tint.toString(16).padStart(6, '0')};--sheet:${url}` : '';
+  return `<span class="portrait${look.tint ? ' tinted' : ''}" style="background-image:${url}${tint}"></span>`;
 }
 
 function memberAction(a) {

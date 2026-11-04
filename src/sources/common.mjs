@@ -95,5 +95,21 @@ export function statusOfKind(kind) {
   return 'active';
 }
 
+let DatabaseSync;
+
+/**
+ * Open a SQLite database read-only with node:sqlite, or null where this Node
+ * doesn't have it (before 22.13 without a flag). Its "experimental" warning is
+ * kept out of Kafra's log.
+ */
+export async function openSqlite(path) {
+  if (DatabaseSync === undefined) {
+    const warn = process.emitWarning;
+    process.emitWarning = () => {};
+    try { ({ DatabaseSync } = await import('node:sqlite')); } catch { DatabaseSync = null; } finally { process.emitWarning = warn; }
+  }
+  return DatabaseSync ? new DatabaseSync(path, { readOnly: true }) : null;
+}
+
 /** HP: the share of the context window still free, 0–100. */
 export const hpOf = (used, window) => Math.max(0, Math.min(100, Math.round((1 - used / window) * 100)));

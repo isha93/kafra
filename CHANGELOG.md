@@ -13,6 +13,11 @@
   instead of every 2 seconds. Session folders are watched; a quiet world is
   rebuilt only every 10 seconds, and every open tab and the menu bar share
   one scan.
+- Three more agents: Cursor's agent (CLI and Agents window) as a gold
+  Whitesmith, OpenCode as a red Champion, and Aider as a tan Gunslinger.
+  OpenCode is read from its SQLite database with Node's built-in `node:sqlite`
+  (Node 22.13+), so Kafra still installs nothing. Cursor and Aider show live
+  but not in replays, since their logs have no timestamps per line.
 
 ## v0.1.3 — base levels
 

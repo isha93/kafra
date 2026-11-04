@@ -71,6 +71,30 @@ export function targetOfClaudeTool(name = '', input = {}) {
   return { label: name };
 }
 
+/**
+ * Cursor and OpenCode name their tools much like Claude Code does, in other
+ * cases and with other argument names; map them over and reuse the rules above.
+ */
+const SIMILAR_TOOLS = {
+  bash: 'Bash', shell: 'Bash', run_terminal_cmd: 'Bash',
+  read: 'Read', read_file: 'Read', write: 'Write', edit: 'Edit', multiedit: 'MultiEdit',
+  strreplace: 'Edit', search_replace: 'Edit', edit_file: 'Edit', patch: 'Edit', apply_patch: 'Edit',
+  glob: 'Glob', list: 'Glob', ls: 'Glob', list_dir: 'Glob', grep: 'Grep', codebase_search: 'Grep',
+  webfetch: 'WebFetch', websearch: 'WebSearch', web_search: 'WebSearch', task: 'Task',
+};
+
+/** A tool from Cursor or OpenCode → { kind, file?, label? }. */
+export function similarTool(name = '', input = {}) {
+  const claude = SIMILAR_TOOLS[String(name).toLowerCase()] ?? name;
+  const i = {
+    ...input,
+    file_path: input.file_path ?? input.filePath ?? input.path ?? input.target_file,
+    command: input.command ?? input.cmd,
+    query: input.query ?? input.search_term,
+  };
+  return { kind: kindOfClaudeTool(claude, i), ...targetOfClaudeTool(claude, i) };
+}
+
 export function oneLine(v) {
   return redact(String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, 80));
 }

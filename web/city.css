@@ -172,6 +172,11 @@ body.city {
   image-rendering: pixelated;
   background-color: rgba(139, 115, 85, .15);
 }
+.member .portrait.tinted { position: relative; }
+.member .portrait.tinted::after {
+  content: ''; position: absolute; inset: 0; background: var(--tint); mix-blend-mode: multiply;
+  -webkit-mask: var(--sheet) -20px -15px / 1120px auto no-repeat; mask: var(--sheet) -20px -15px / 1120px auto no-repeat;
+}
 .member .portrait.none { border-radius: 50%; width: 32px; height: 32px; align-self: center; background: var(--st); }
 .member .m-name { font-weight: 700; font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .member .m-town { font-size: 10px; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

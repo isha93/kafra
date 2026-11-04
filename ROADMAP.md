@@ -15,7 +15,7 @@ would change that is opt-in and listed last.
 - Living simulation (`./kafra.sh simulate`)
 - Hardening: DNS-rebinding and cross-site protection, strict CSP without eval
 - No dependencies: PixiJS vendored, no `npm install`
-- Agents: Claude Code, Codex, Gemini CLI
+- Agents: Claude Code, Codex, Gemini CLI, Cursor, OpenCode, Aider
 - Replay of any day, and the daily Kafra newspaper
 - Menu bar (SwiftBar), native notifications, autostart at login
 - English and Indonesian UI, following the system language
@@ -56,7 +56,6 @@ would change that is opt-in and listed last.
 - [x] Codex CLI / Desktop source (Wizard)
 - [x] Gemini CLI source (Sage)
 - [x] A job class per tool
-- [ ] Aider, Cursor, OpenCode sources
 
 ## 5. Game layer
 

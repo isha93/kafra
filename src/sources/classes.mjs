@@ -4,12 +4,17 @@
  * Cosmetic, but it makes a list of UUIDs readable.
  */
 
-export const SOURCE_NAME = { 'claude-code': 'Claude Code', codex: 'Codex', gemini: 'Gemini CLI' };
+export const SOURCE_NAME = {
+  'claude-code': 'Claude Code', codex: 'Codex', gemini: 'Gemini CLI', cursor: 'Cursor', opencode: 'OpenCode', aider: 'Aider',
+};
 
 export function jobFor(source, model = '') {
   const m = model.toLowerCase();
   if (source === 'codex') return { job: 'Wizard', sprite: 'wizard' };
   if (source === 'gemini') return { job: 'Sage', sprite: 'sage' };
+  if (source === 'cursor') return { job: 'Whitesmith', sprite: 'whitesmith' };
+  if (source === 'opencode') return { job: 'Champion', sprite: 'champion' };
+  if (source === 'aider') return { job: 'Gunslinger', sprite: 'gunslinger' };
   if (m.includes('opus')) return { job: 'Lord Knight', sprite: 'knight' };
   if (m.includes('sonnet')) return { job: 'Assassin Cross', sprite: 'assassin' };
   if (m.includes('haiku')) return { job: 'Hunter', sprite: 'hunter' };

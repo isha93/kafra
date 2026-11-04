@@ -10,10 +10,24 @@ import { characterSheets, sheetFrame, sheetHas } from './assets.js';
 const PLACEHOLDER_SCALE = 2;
 
 /**
- * Classes that borrow another class's sheet, recoloured. Gemini's Sage wears
- * the bard's sheet in pale blue until it has art of its own.
+ * Classes that borrow another class's sheet, recoloured, until they have art
+ * of their own: Gemini's Sage wears the bard's in pale blue, Cursor's
+ * Whitesmith the knight's in gold, OpenCode's Champion the rogue's in red,
+ * Aider's Gunslinger the archer's in tan.
  */
-const ALIAS = { sage: { sheet: 'bard', tint: 0xb8d4ff } };
+const ALIAS = {
+  sage: { sheet: 'bard', tint: 0xb8d4ff },
+  whitesmith: { sheet: 'knight', tint: 0xffd27a },
+  champion: { sheet: 'assassin', tint: 0xff9c8a },
+  gunslinger: { sheet: 'hunter', tint: 0xe0cc9e },
+};
+
+/** The sheet a class is drawn with, and its tint: its own, or the one it borrows. */
+export function sheetFor(cls) {
+  if (characterSheets.has(cls)) return { sheet: cls, tint: null };
+  const alias = ALIAS[cls];
+  return alias && characterSheets.has(alias.sheet) ? alias : null;
+}
 
 /**
  * @param cls      job class or villager key

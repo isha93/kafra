@@ -69,7 +69,7 @@ banner() {
 local_notice() {
   printf '%s\n' "${BOLD}  🔒 $(lx "Everything runs locally on this machine" "Semua berjalan lokal di laptop ini")${OFF}"
   printf '%s\n' "${DIM}     • $(lx "The server listens on 127.0.0.1 only: not reachable from Wi-Fi or the internet." "Server hanya di 127.0.0.1: tidak bisa dibuka dari WiFi atau internet.")"
-  printf '%s\n' "     • $(lx "It only READS agent sessions (~/.claude, ~/.codex, ~/.gemini) and git." "Hanya MEMBACA sesi agent (~/.claude, ~/.codex, ~/.gemini) dan git.")"
+  printf '%s\n' "     • $(lx "It only READS agent sessions (~/.claude, ~/.codex, ~/.gemini, ~/.cursor, OpenCode's database, Aider's logs) and git." "Hanya MEMBACA sesi agent (~/.claude, ~/.codex, ~/.gemini, ~/.cursor, database OpenCode, log Aider) dan git.")"
   printf '%s\n' "     • $(lx "It never writes to your repos, installs no hooks, changes no agent settings." "Tidak menulis ke repo, tidak memasang hooks, tidak mengubah setting agent.")"
   printf '%s\n' "     • $(lx "It never calls an AI model and uses no tokens." "Tidak memanggil model AI dan tidak memakai token.")"
   printf '%s\n' "     • $(lx "No npm install, no internet: everything it needs is in this repo." "Tanpa npm install dan tanpa internet: semua yang dibutuhkan ada di repo.")${OFF}"
@@ -144,15 +144,22 @@ check_git() {
 # Which agents have left sessions on this machine in the last week.
 check_agents() {
   local found=0 n
-  for pair in "Claude Code:$HOME/.claude/projects:*.jsonl:2" "Codex:$HOME/.codex/sessions:*.jsonl:4" "Gemini CLI:$HOME/.gemini/tmp:session-*.json:3"; do
+  for pair in "Claude Code:$HOME/.claude/projects:*.jsonl:2" "Codex:$HOME/.codex/sessions:*.jsonl:4" "Gemini CLI:$HOME/.gemini/tmp:session-*.json:3" "Cursor:$HOME/.cursor/projects:*.jsonl:4"; do
     IFS=: read -r name dir pattern depth <<<"$pair"
     [[ -d "$dir" ]] || continue
     n=$(find "$dir" -maxdepth "$depth" -name "$pattern" -mtime -7 2>/dev/null | wc -l | tr -d ' ')
     ok "$(lx "$name: $n sessions in the last 7 days" "$name: $n sesi dalam 7 hari terakhir")"
     found=1
   done
+  local oc="${OPENCODE_DB:-${XDG_DATA_HOME:-$HOME/.local/share}/opencode/opencode.db}"
+  if [[ -f "$oc" ]]; then
+    found=1
+    # OpenCode keeps a SQLite database, which Node reads only from 22.13 on.
+    if node -e 'require("node:sqlite")' >/dev/null 2>&1; then ok "$(lx "OpenCode: database found" "OpenCode: database ditemukan")"
+    else warn "$(lx "OpenCode: found, but reading it needs Node 22.13 or newer" "OpenCode: ditemukan, tapi butuh Node 22.13 atau lebih baru untuk membacanya")"; fi
+  fi
   if (( ! found )); then
-    warn "$(lx "No agent sessions found yet: the world stays empty until you use Claude Code, Codex or Gemini CLI." "Belum ada sesi agent: dunianya sepi sampai kamu memakai Claude Code, Codex, atau Gemini CLI.")"
+    warn "$(lx "No agent sessions found yet: the world stays empty until you use Claude Code, Codex, Gemini CLI, Cursor, OpenCode or Aider." "Belum ada sesi agent: dunianya sepi sampai kamu memakai Claude Code, Codex, Gemini CLI, Cursor, OpenCode, atau Aider.")"
     printf '%s\n' "    ${DIM}$(lx "Try it first: $CMD demo" "Coba dulu: $CMD demo")${OFF}"
   fi
 }

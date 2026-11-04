@@ -6,6 +6,8 @@ import { PROJECTS_DIR } from './sources/claude-code.mjs';
 import { listSessions } from './sources/index.mjs';
 import { CODEX_DIR } from './sources/codex.mjs';
 import { GEMINI_DIR } from './sources/gemini.mjs';
+import { CURSOR_DIR } from './sources/cursor.mjs';
+import { OPENCODE_DIR } from './sources/opencode.mjs';
 import { buildWorld, buildReplay, saveExp } from './world.mjs';
 import { allowedHost, allowedOrigin, SECURITY_HEADERS } from './guard.mjs';
 import { loadConfig, visible, publicSessions, CONFIG_PATH } from './privacy.mjs';
@@ -130,8 +132,9 @@ createServer(async (req, res) => {
   return serveStatic(path, res);
 }).listen(PORT, HOST, () => {
   console.log(`⚔  Kafra is ready at http://${HOST}:${PORT}`);
-  console.log(`   reading (read-only): ${PROJECTS_DIR}, ${CODEX_DIR}, ${GEMINI_DIR}`);
-  const watched = startWatching([PROJECTS_DIR, CODEX_DIR, GEMINI_DIR]);
+  console.log(`   reading (read-only): ${PROJECTS_DIR}, ${CODEX_DIR}, ${GEMINI_DIR}, ${CURSOR_DIR}, ${OPENCODE_DIR}, and Aider logs in your repos`);
+  // Aider's logs sit in each repo and aren't watched; the 10 s heartbeat picks them up.
+  const watched = startWatching([PROJECTS_DIR, CODEX_DIR, GEMINI_DIR, CURSOR_DIR, OPENCODE_DIR]);
   console.log(watched ? '   updates: as soon as an agent writes' : '   updates: every 2 s (folders can\'t be watched here)');
   const config = loadConfig();
   if (config.error) console.log(`   ⚠ ${config.error}`);

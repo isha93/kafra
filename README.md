@@ -11,7 +11,7 @@
 ![Dependencies: 0](https://img.shields.io/badge/dependencies-0-success)
 ![Runs locally](https://img.shields.io/badge/runs-127.0.0.1%20only-blue)
 ![Tokens used: 0](https://img.shields.io/badge/tokens%20used-0-purple)
-![Agents: Claude · Codex · Gemini](https://img.shields.io/badge/agents-Claude%20·%20Codex%20·%20Gemini-orange)
+![Agents: Claude · Codex · Gemini · Cursor · OpenCode · Aider](https://img.shields.io/badge/agents-Claude%20·%20Codex%20·%20Gemini%20·%20Cursor%20·%20OpenCode%20·%20Aider-orange)
 ![License: MIT](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ![The world of Kafra: six towns on one island, a party bar of agents, and the Kafra Service panel](docs/images/world.jpg)
@@ -20,7 +20,7 @@
 
 > *"Welcome to Kafra Service! We look after adventurers in every town of
 > Rune-Midgard: storage, teleports, save points."* Here, the adventurers are
-> your Claude Code, Codex and Gemini agents, and the towns are your repos.
+> your Claude Code, Codex, Gemini, Cursor, OpenCode and Aider agents, and the towns are your repos.
 
 Running several agents at once means hopping between terminals to find out who
 is working, who is waiting for you, and whose context is about to run out.
@@ -108,7 +108,8 @@ system language, and you can switch with 🌐 (remembered per browser), add
 ## 🛡️ Class roster
 
 The tool picks the family and the model picks the rank, so you can tell
-Claude from Codex from Gemini, and Opus from Haiku, at a glance.
+Claude from Codex from Gemini, and Opus from Haiku, at a glance. Classes
+without art of their own yet wear another class's, recoloured.
 
 | | Class | Agent |
 |:-:|---|---|
@@ -118,6 +119,9 @@ Claude from Codex from Gemini, and Opus from Haiku, at a glance.
 | <img src="docs/images/classes/bard.png" height="72" alt="Bard"> | **Bard** | Claude Fable |
 | <img src="docs/images/classes/wizard.png" height="72" alt="Wizard"> | **Wizard** | Codex (CLI and Desktop) |
 | <img src="docs/images/classes/sage.png" height="72" alt="Sage"> | **Sage** | Gemini CLI |
+| <img src="docs/images/classes/knight.png" height="72" alt="Whitesmith"> | **Whitesmith** (gold) | Cursor's agent (CLI and Agents window) |
+| <img src="docs/images/classes/assassin.png" height="72" alt="Champion"> | **Champion** (red) | OpenCode |
+| <img src="docs/images/classes/hunter.png" height="72" alt="Gunslinger"> | **Gunslinger** (tan) | Aider |
 | <img src="docs/images/classes/novice.png" height="72" alt="Novice"> | **Novice** | any model Kafra doesn't recognise |
 | <img src="docs/images/classes/kafra.png" height="72" alt="Kafra attendant"> | *Kafra attendant* | an NPC at every booth; click the booth for the town's build log |
 
@@ -274,6 +278,13 @@ start everyone again from Lv.1.
 | Claude Code | `~/.claude/projects/` |
 | Codex | `~/.codex/sessions/` |
 | Gemini CLI | `~/.gemini/tmp/` (its folders are hashes of the working directory; Kafra finds the folder or skips the session, and never guesses) |
+| Cursor | `~/.cursor/projects/*/agent-transcripts/`: the CLI and the Agents window. Chats in the IDE's side panel live in Cursor's internal database and aren't read |
+| OpenCode | `~/.local/share/opencode/opencode.db`, opened read-only. Needs Node 22.13 or newer |
+| Aider | `.aider.chat.history.md` in your repos: ones other agents work in, and folders up to three levels below home |
+
+Cursor and Aider logs have no timestamps per line, so they show live but sit
+out replays. Cursor's transcript format is undocumented and changes between
+releases; if yours looks wrong, the issue template below helps.
 
 `KAFRA_SOURCES=claude-code,codex` limits which sources are read, and
 `KAFRA_MAX_AGE_DAYS` (default 7) sets how far back.
@@ -352,14 +363,14 @@ Measured on a MacBook with about 450 sessions on disk:
 | ✅ | **Town Founder**: one repo, one town, and agents walk to their work |
 | ✅ | **Master Builder**: generated pixel art for every class, building and skill |
 | ✅ | **Kingdom Builder**: tiers, biomes, moods and a world map |
-| ✅ | **Polyglot**: reads Claude Code, Codex and Gemini CLI |
+| ✅ | **Polyglot**: reads Claude Code, Codex, Gemini CLI, Cursor, OpenCode and Aider |
 | ✅ | **Time Mage**: replay any day, and the daily newspaper |
 | ✅ | **Watchtower**: menu bar, native notifications, autostart |
 | ✅ | **Bard's Song**: synthesised sound and music |
 | ✅ | **Iron Wall**: DNS-rebinding guard, strict CSP, zero dependencies, public mode |
 | 🔒 | **Native Hero**: a SwiftUI menu bar app with no SwiftBar needed |
-| 🔒 | **Monster Hunter**: failing tests become monsters in the arena until they pass |
-| 🔒 | **Hall of Fame**: achievements and levels for your own agents |
+| ✅ | **Monster Hunter**: failing tests become bugs in the arena until they pass |
+| ✅ | **Hall of Fame**: achievements and levels for your own agents |
 | 🔒 | **Guild Recruiter**: Aider, Cursor and OpenCode |
 | 🔒 | **Commander**: approve tool calls from the city (opt-in, needs hooks) |
 

@@ -1,5 +1,5 @@
 name: An agent isn't showing up right
-description: Claude Code, Codex or Gemini changed something and Kafra misreads it
+description: An agent changed its log format and Kafra misreads it
 labels: [agent-format]
 body:
   - type: markdown
@@ -11,7 +11,7 @@ body:
     id: agent
     attributes:
       label: Agent
-      options: [Claude Code, Codex (CLI), Codex (Desktop), Gemini CLI, other]
+      options: [Claude Code, Codex (CLI), Codex (Desktop), Gemini CLI, Cursor, OpenCode, Aider, other]
     validations:
       required: true
   - type: input
