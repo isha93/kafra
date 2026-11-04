@@ -297,6 +297,10 @@ export function logEvent(ev, pick) {
       text = t('log.slain', { who, test: ev.tool?.label || ev.tool?.name || '' });
       cls = 'gold';
       break;
+    case 'tierup':
+      text = t('log.tierup', { town: ev.town.town, tier: ev.town.tier?.name ?? '' });
+      cls = 'gold';
+      break;
     case 'levelup':
       text = t('log.levelup', { who, n: ev.agent.level.level });
       cls = 'gold';

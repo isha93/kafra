@@ -23,6 +23,7 @@ would change that is opt-in and listed last.
 - Install with Homebrew (`isha93/tap/kafra`) or npm (`@isha93/kafra`)
 - Failing tests become bugs in the arena until a run passes
 - EXP and base levels per class per town
+- Tier-up animation: construction, then fireworks
 - Privacy: `kafra.config.json` (hide / only / redact) and public mode
 - Synthesised sound: positional effects per activity, and generative
   background music per biome
@@ -59,7 +60,6 @@ would change that is opt-in and listed last.
 
 - [ ] Achievements: first commit, green streaks, a town reaching City
 - [ ] Statues for releases and git tags
-- [ ] Tier-up animation: construction, then fireworks
 
 ## 6. Quality
 

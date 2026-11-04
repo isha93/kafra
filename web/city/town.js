@@ -154,10 +154,11 @@ export class Town {
       obj.on('pointertap', (e) => { e.stopPropagation(); this.onSelect?.(sel); });
       return obj;
     };
+    this.civics = [];
     const civic = (key, g) => {
       const { x, y } = CIVIC[key];
       const text = t(`civic.${key}`);
-      this.put(clickable(g, { type: 'civic', town: this.id, key }), x, y);
+      this.civics.push(this.put(clickable(g, { type: 'civic', town: this.id, key }), x, y));
       const sign = signboard(text);
       this.put(sign, x + 1.2, y + 1.2, 40);
     };
@@ -168,7 +169,7 @@ export class Town {
     civic('kafra', artOr('kafra', () => ({ g: kafraBooth() })).g);
     if (id === 'capital' && buildingArt.has('castle')) {
       // Behind everything in town, so it sorts under the north-east edge.
-      this.put(clickable(artOr('castle', () => ({ g: new Graphics() })).g, { type: 'town', id: this.id }), CASTLE.x, CASTLE.y, -2000);
+      this.castle = this.put(clickable(artOr('castle', () => ({ g: new Graphics() })).g, { type: 'town', id: this.id }), CASTLE.x, CASTLE.y, -2000);
     }
 
     this.portal = warpPortal();
@@ -378,6 +379,53 @@ export class Town {
     for (const c of fresh) this.onEvent?.({ town: data, type: 'commit', commit: c });
   }
 
+  /**
+   * The town just grew a tier and was rebuilt: raise every building out of the
+   * ground one after another, in dust and sparks, then set off fireworks.
+   */
+  celebrateTier() {
+    // Back to front, and a capital's castle last.
+    const order = [...this.civics, ...[...this.buildings.values()].map((b) => b.view)].sort((a, b) => a.zIndex - b.zIndex);
+    if (this.castle) order.push(this.castle);
+    const items = order.map((obj, i) => ({ obj, base: obj.scale.y, delay: 0.3 + i * 0.14 + (obj === this.castle ? 0.4 : 0), up: false }));
+    for (const it of items) it.obj.scale.y = 0.001;
+    this.tierUp = { t: 0, items, finale: items.length * 0.14 + (this.castle ? 1.5 : 1.1), done: false };
+    this.onEvent?.({ town: this.data, type: 'tierup' });
+  }
+
+  tickTierUp(dt) {
+    const tu = this.tierUp;
+    tu.t += dt;
+    for (const it of tu.items) {
+      if (it.obj.destroyed) continue;
+      const p = Math.min(1, Math.max(0, (tu.t - it.delay) / 0.55));
+      if (p > 0 && !it.up) {
+        it.up = true;
+        const { x, y } = it.obj.position;
+        for (let i = 0; i < 4; i++) this.fx.smoke(x + (Math.random() - 0.5) * 30, y - 4, it.obj.zIndex + 1, 0xd8c8a8);
+        this.fx.sparks(x, y - 10, it.obj.zIndex + 1);
+        sfxAt('hammer', it.obj, this.zoom ?? 1, 0.7);
+      }
+      // Ease out with a little overshoot, like a building springing up.
+      const s = p === 0 ? 0.001 : 1 + 2.2 * (p - 1) ** 3 + 1.2 * (p - 1) ** 2;
+      it.obj.scale.y = it.base * s;
+    }
+    if (tu.t >= tu.finale && !tu.done) {
+      tu.done = true;
+      const k = iso(CIVIC.kafra.x, CIVIC.kafra.y);
+      const stars = '★'.repeat(this.tier?.stars ?? 1);
+      [[0, -90], [-90, -40], [90, -40], [0, 10]].forEach(([dx, dy], i) => {
+        setTimeout(() => !this.view.destroyed && this.fx.fireworks(k.x + dx, k.y + dy - 60, k.y + 200), i * 250);
+      });
+      this.fx.popText(k.x, k.y - 120, k.y + 200, `${stars} ${this.tier?.name ?? ''}!`, 0xffd54f, 22);
+      sfxAt('fanfare', this.kafraNpc, this.zoom ?? 1);
+    }
+    if (tu.t > tu.finale + 2) {
+      for (const it of tu.items) if (!it.obj.destroyed) it.obj.scale.y = it.base;
+      this.tierUp = null;
+    }
+  }
+
   shakeBuilding(name) {
     if (name) this.shakes.set(name, 0.12);
   }
@@ -398,6 +446,7 @@ export class Town {
     this.leavingMonsters = this.leavingMonsters.filter((m) => m.tick(dt) || (m.destroy(), false));
     this.declutterBubbles();
     this.tickSky(dt);
+    if (this.tierUp) this.tickTierUp(dt);
 
     for (const [name, left] of this.shakes) {
       const b = this.buildings.get(name);

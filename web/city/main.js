@@ -191,9 +191,11 @@ function render(data) {
       markerLayer.addChild(entry.marker.view);
     } else if (entry.town.key !== growthKey(t)) {
       // Grew a tier, changed biome or mood: rebuild the town where it stands.
+      const before = entry.town.tier?.stars ?? 0;
       entry.town.destroy();
       entry.town = new Town(t, { onSelect: (sel) => select(sel), onEvent });
       townLayer.addChild(entry.town.view);
+      if ((t.tier?.stars ?? 0) > before && !replay.active) entry.town.celebrateTier();
     } else {
       entry.town.apply(t);
     }

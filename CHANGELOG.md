@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- A town that grows a tier now celebrates: every building rises out of the
+  ground in dust and sparks, a capital's castle last, then fireworks and a
+  "★★★ Town!" banner, with a line in the chat log.
+
 ## v0.1.3 — base levels
 
 - Base levels. Every class in every town is one adventurer whose EXP adds up
