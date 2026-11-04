@@ -3,9 +3,9 @@
 ## v0.1.2 — bugs in the arena
 
 - Failing tests become bugs in the arena. An agent whose latest test run failed
-  has a bug waiting for it; the bug grows and reddens with each failure in a
-  row, flinches when the agent swings, and bursts with "Clear!" when a run
-  passes. The chat log says when one appears and when it's cleared, and replay
+  has a bug waiting for it. Each failure in a row makes it bigger and meaner
+  (three generated looks, from a small yellow beetle to a red boss); it
+  flinches when the agent swings, and bursts with "Clear!" when a run passes. The chat log says when one appears and when it's cleared, and replay
   shows them too.
 
 ## v0.1.1 — install with Homebrew
