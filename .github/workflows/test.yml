@@ -47,3 +47,17 @@ jobs:
           # The guards: a rebinding Host and a cross-site request must both be refused.
           test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Host: evil.example:4317' http://127.0.0.1:4317/api/world)" = 421
           test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Sec-Fetch-Site: cross-site' http://127.0.0.1:4317/api/world)" = 403
+
+      - name: Package installs and runs
+        run: |
+          # The npm package holds only files tracked by git, and `kafra` works from it.
+          npm pack --dry-run --json | node -e '
+            const files = JSON.parse(require("fs").readFileSync(0))[0].files.map((f) => f.path);
+            const tracked = new Set(require("child_process").execSync("git ls-files").toString().split("\n"));
+            const extra = files.filter((f) => !tracked.has(f));
+            if (extra.length) { console.error("untracked files in package:", extra); process.exit(1); }'
+          npm pack --pack-destination "$RUNNER_TEMP" >/dev/null
+          npm install -g --prefix "$RUNNER_TEMP/prefix" "$RUNNER_TEMP"/kafra-*.tgz
+          test "$("$RUNNER_TEMP/prefix/bin/kafra" version)" = "$(node -p 'require("./package.json").version')"
+          help=$("$RUNNER_TEMP/prefix/bin/kafra" help)
+          grep -q '~/.config/kafra/config.json' <<<"$help"

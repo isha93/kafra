@@ -12,13 +12,22 @@
  * Filtering happens here, on the server, so hidden data never reaches the page
  * at all — not even in the network tab.
  */
-import { readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { setExtraRedactions } from './activity.mjs';
 
-export const CONFIG_PATH = process.env.KAFRA_CONFIG ?? fileURLToPath(new URL('../kafra.config.json', import.meta.url));
+/** Next to the code in a clone; in ~/.config when installed with Homebrew or npm, which replace the code on upgrade. */
+export const CONFIG_PATH = process.env.KAFRA_CONFIG ?? defaultConfigPath();
+
+function defaultConfigPath() {
+  const root = fileURLToPath(new URL('..', import.meta.url));
+  const beside = join(root, 'kafra.config.json');
+  if (existsSync(beside) || existsSync(join(root, '.git'))) return beside;
+  return join(process.env.XDG_CONFIG_HOME || join(homedir(), '.config'), 'kafra', 'config.json');
+}
 
 const EMPTY = { hide: [], only: [], redact: [], public: false };
 let cached = { mtime: -1, config: EMPTY, error: null };

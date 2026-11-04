@@ -121,10 +121,10 @@ createServer(async (req, res) => {
   if (path === '/api/swiftbar') return send(res, 200, 'text/plain; charset=utf-8', swiftbarText(await buildWorld(), { port: PORT }));
   return serveStatic(path, res);
 }).listen(PORT, HOST, () => {
-  console.log(`⚔  Kafra siap di http://${HOST}:${PORT}`);
-  console.log(`   membaca (read-only): ${PROJECTS_DIR}, ${CODEX_DIR}, ${GEMINI_DIR}`);
+  console.log(`⚔  Kafra is ready at http://${HOST}:${PORT}`);
+  console.log(`   reading (read-only): ${PROJECTS_DIR}, ${CODEX_DIR}, ${GEMINI_DIR}`);
   const config = loadConfig();
   if (config.error) console.log(`   ⚠ ${config.error}`);
-  if (config.hide.length || config.only.length || config.redact.length) console.log(`   privasi: ${CONFIG_PATH}`);
-  if (config.public) console.log('   MODE PUBLIK: semua teks, path, dan nama repo disembunyikan');
+  if (config.hide.length || config.only.length || config.redact.length) console.log(`   privacy: ${CONFIG_PATH}`);
+  if (config.public) console.log('   PUBLIC MODE: all text, paths and repo names are hidden');
 });

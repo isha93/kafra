@@ -41,10 +41,20 @@ nothing into your agents, and makes no network calls. There's no
 > autostart are macOS-only.
 
 ```bash
+brew install isha93/tap/kafra
+kafra
+```
+
+Or straight from the source, no install:
+
+```bash
 git clone https://github.com/isha93/kafra.git
 cd kafra
 ./kafra.sh
 ```
+
+Installed with Homebrew, the command is `kafra`; in a clone it's `./kafra.sh`.
+Everything below works with either.
 
 - [ ] Your browser opens **http://127.0.0.1:4317**: every repo with an agent becomes a town.
 - [ ] Click an agent to see its quest, HP and recent actions.
@@ -238,7 +248,9 @@ never reads your files' contents, only their paths and counts.
 > your prompts.
 
 **Hide what you don't want shown.** Copy `kafra.config.example.json` to
-`kafra.config.json` (it's gitignored). Changes apply without a restart.
+`kafra.config.json` in your clone (it's gitignored), or to
+`~/.config/kafra/config.json` if you installed Kafra with Homebrew.
+Changes apply without a restart.
 
 ```json
 {

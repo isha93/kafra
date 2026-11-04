@@ -18,7 +18,23 @@
 # exactly what is read.
 
 set -euo pipefail
-cd "$(dirname "$0")"
+
+# Follow the links Homebrew and npm put on PATH back to the real install.
+src=$0
+while [[ -L "$src" ]]; do
+  dir=$(cd -P "$(dirname "$src")" && pwd)
+  src=$(readlink "$src")
+  [[ $src == /* ]] || src="$dir/$src"
+done
+cd -P "$(dirname "$src")"
+
+# What to type, as the user would: `kafra` when installed, `./kafra.sh` in a clone.
+if [[ $(basename "$0") == kafra ]]; then CMD=kafra; else CMD=./kafra.sh; fi
+# A path that survives upgrades, for launchd and the SwiftBar link: Homebrew's
+# opt/ link rather than the versioned Cellar folder.
+if [[ $PWD == */Cellar/kafra/*/libexec ]]; then STABLE="${PWD%%/Cellar/*}/opt/kafra/libexec"; else STABLE=$PWD; fi
+# Settings live with the clone, or in ~/.config when installed as a package.
+if [[ -d .git || -f kafra.config.json ]]; then CONFIG=kafra.config.json; else CONFIG="~/.config/kafra/config.json"; fi
 
 GOLD=$'\033[33m'; PINK=$'\033[35m'; GREEN=$'\033[32m'; RED=$'\033[31m'; DIM=$'\033[2m'; BOLD=$'\033[1m'; OFF=$'\033[0m'
 [[ -t 1 ]] || { GOLD=; PINK=; GREEN=; RED=; DIM=; BOLD=; OFF=; }
@@ -63,7 +79,7 @@ local_notice() {
 usage() {
   banner
   if [[ $KAFRA_LANG == id ]]; then cat <<EOF
-  ${BOLD}Pakai:${OFF} ./kafra.sh [perintah]
+  ${BOLD}Pakai:${OFF} $CMD [perintah]
 
     ${GOLD}(kosong)${OFF}   buka kota dengan agent aslimu                → http://127.0.0.1:4317
     ${GOLD}demo${OFF}       kota contoh, semua animasi sekaligus          → http://127.0.0.1:4318
@@ -74,17 +90,18 @@ usage() {
     ${GOLD}setup${OFF}      cuma cek Node dan git
     ${GOLD}clean${OFF}      hapus sisa file sementara (simulasi, demo, test)
     ${GOLD}test${OFF}       jalankan test
+    ${GOLD}version${OFF}    versi Kafra
     ${GOLD}help${OFF}       pesan ini
 
   ${BOLD}Di dalam kota:${OFF} drag = geser · scroll = zoom · Tab = agent berikutnya
                   M = seluruh dunia · R = replay · Esc = batal
-  ${BOLD}Privasi:${OFF} salin kafra.config.example.json ke kafra.config.json untuk
+  ${BOLD}Privasi:${OFF} tulis $CONFIG (contoh: kafra.config.example.json) untuk
            menyembunyikan repo (hide/only) atau menyensor kata (redact).
   ${BOLD}Bahasa:${OFF} KAFRA_LANG=en atau KAFRA_LANG=id · ${BOLD}Berhenti:${OFF} Ctrl+C
 
 EOF
   else cat <<EOF
-  ${BOLD}Usage:${OFF} ./kafra.sh [command]
+  ${BOLD}Usage:${OFF} $CMD [command]
 
     ${GOLD}(none)${OFF}     open your world with your real agents         → http://127.0.0.1:4317
     ${GOLD}demo${OFF}       a sample town showing every animation         → http://127.0.0.1:4318
@@ -95,11 +112,12 @@ EOF
     ${GOLD}setup${OFF}      only check Node and git
     ${GOLD}clean${OFF}      remove temporary files (simulation, demo, tests)
     ${GOLD}test${OFF}       run the tests
+    ${GOLD}version${OFF}    Kafra's version
     ${GOLD}help${OFF}       this list
 
   ${BOLD}In the city:${OFF} drag = pan · scroll = zoom · Tab = next agent
                 M = whole world · R = replay · Esc = clear
-  ${BOLD}Privacy:${OFF} copy kafra.config.example.json to kafra.config.json to hide
+  ${BOLD}Privacy:${OFF} write $CONFIG (see kafra.config.example.json) to hide
            repos (hide/only) or mask words (redact).
   ${BOLD}Language:${OFF} KAFRA_LANG=en or KAFRA_LANG=id · ${BOLD}Stop:${OFF} Ctrl+C
 
@@ -135,7 +153,7 @@ check_agents() {
   done
   if (( ! found )); then
     warn "$(lx "No agent sessions found yet: the world stays empty until you use Claude Code, Codex or Gemini CLI." "Belum ada sesi agent: dunianya sepi sampai kamu memakai Claude Code, Codex, atau Gemini CLI.")"
-    printf '%s\n' "    ${DIM}$(lx "Try it first: ./kafra.sh demo" "Coba dulu: ./kafra.sh demo")${OFF}"
+    printf '%s\n' "    ${DIM}$(lx "Try it first: $CMD demo" "Coba dulu: $CMD demo")${OFF}"
   fi
 }
 
@@ -188,7 +206,7 @@ run() {
     exit 0
   fi
   if port_busy "$port"; then
-    fail "$(lx "Port $port is used by another program. Pick another: KAFRA_PORT=4400 ./kafra.sh $mode" "Port $port dipakai program lain. Pakai port lain: KAFRA_PORT=4400 ./kafra.sh $mode")"
+    fail "$(lx "Port $port is used by another program. Pick another: KAFRA_PORT=4400 $CMD $mode" "Port $port dipakai program lain. Pakai port lain: KAFRA_PORT=4400 $CMD $mode")"
   fi
   echo
   local_notice
@@ -201,25 +219,31 @@ run() {
 
 # ── Menu bar ────────────────────────────────────────────────────────────────
 
+# npx runs Kafra from a cache that npm may clear; launchd and SwiftBar need a real install.
+need_install() {
+  [[ $PWD != */_npx/* ]] || fail "$(lx "npx runs Kafra from a temporary cache. Install it first: brew install isha93/tap/kafra (or npm install -g kafra)" "npx menjalankan Kafra dari cache sementara. Pasang dulu: brew install isha93/tap/kafra (atau npm install -g kafra)")"
+}
+
 install_menubar() {
   [[ "$(uname)" == Darwin ]] || fail "$(lx "The menu bar icon is macOS-only." "Ikon menu bar hanya untuk macOS.")"
+  need_install
   if [[ ! -d /Applications/SwiftBar.app ]]; then
     kafra "$(lx "The menu bar icon uses SwiftBar (free, open source). Install it first:" "Ikon menu bar memakai SwiftBar (gratis, open source). Pasang dulu:")"
     printf '%s\n' "    ${BOLD}brew install --cask swiftbar${OFF}"
-    printf '%s\n' "    ${DIM}$(lx "or download it from https://swiftbar.app, then run ./kafra.sh menubar again." "atau unduh dari https://swiftbar.app, lalu jalankan ./kafra.sh menubar lagi.")${OFF}"
+    printf '%s\n' "    ${DIM}$(lx "or download it from https://swiftbar.app, then run $CMD menubar again." "atau unduh dari https://swiftbar.app, lalu jalankan $CMD menubar lagi.")${OFF}"
     exit 1
   fi
   local dir
   dir=$(defaults read com.ameba.SwiftBar PluginDirectory 2>/dev/null || true)
   if [[ -z "$dir" ]]; then
-    kafra "$(lx "Open SwiftBar once and choose its plugin folder, then run ./kafra.sh menubar again." "Buka SwiftBar sekali dan pilih folder plugin-nya, lalu jalankan ./kafra.sh menubar lagi.")"
+    kafra "$(lx "Open SwiftBar once and choose its plugin folder, then run $CMD menubar again." "Buka SwiftBar sekali dan pilih folder plugin-nya, lalu jalankan $CMD menubar lagi.")"
     open -a SwiftBar
     exit 1
   fi
   dir=${dir/#\~/$HOME}
   mkdir -p "$dir"
   # A link, not a copy: updating Kafra updates the plugin too.
-  ln -sf "$PWD/integrations/swiftbar/kafra.10s.sh" "$dir/kafra.10s.sh"
+  ln -sf "$STABLE/integrations/swiftbar/kafra.10s.sh" "$dir/kafra.10s.sh"
   ok "$(lx "Plugin installed in $dir" "Plugin terpasang di $dir")"
   # Notifications as "Kafra" (osascript's belong to Script Editor), built from
   # source here so no third-party app is involved.
@@ -238,7 +262,7 @@ install_menubar() {
   # while it is still starting.
   pgrep -x SwiftBar >/dev/null || open -a SwiftBar
   kafra "$(lx "Look at the top-right corner: ⚔ shows how many agents are waiting for you." "Lihat pojok kanan atas: ⚔ menunjukkan berapa agent yang menunggumu.")"
-  printf '%s\n' "  ${DIM}$(lx "A notification appears when an agent starts waiting. Kafra must be running (./kafra.sh or autostart)." "Notifikasi muncul saat ada agent yang mulai menunggu. Kafra harus jalan (./kafra.sh atau autostart).")${OFF}"
+  printf '%s\n' "  ${DIM}$(lx "A notification appears when an agent starts waiting. Kafra must be running ($CMD or autostart)." "Notifikasi muncul saat ada agent yang mulai menunggu. Kafra harus jalan ($CMD atau autostart).")${OFF}"
 }
 
 # ── Housekeeping ────────────────────────────────────────────────────────────
@@ -268,6 +292,7 @@ xml_escape() { local s=${1//&/&amp;}; s=${s//</&lt;}; s=${s//>/&gt;}; printf '%s
 
 autostart_on() {
   [[ "$(uname)" == Darwin ]] || fail "$(lx "Autostart uses launchd and is macOS-only." "Autostart memakai launchd, hanya untuk macOS.")"
+  need_install
   setup
   local node port
   node=$(command -v node)
@@ -293,9 +318,9 @@ autostart_on() {
     <string>$(xml_escape "$node")</string>
     <!-- A small heap cap keeps a long-running server lean; it needs ~30 MB of heap. -->
     <string>--max-old-space-size=128</string>
-    <string>$(xml_escape "$PWD/src/server.mjs")</string>
+    <string>$(xml_escape "$STABLE/src/server.mjs")</string>
   </array>
-  <key>WorkingDirectory</key><string>$(xml_escape "$PWD")</string>
+  <key>WorkingDirectory</key><string>$(xml_escape "$STABLE")</string>
   <key>EnvironmentVariables</key>
   <dict>
     <key>KAFRA_PORT</key><string>$port</string>
@@ -332,7 +357,7 @@ PLIST
   else
     fail "$(lx "The server didn't start. Check the log: $LOGDIR/server.log" "Server belum hidup. Cek log: $LOGDIR/server.log")"
   fi
-  printf '%s\n' "  ${DIM}Node: $node — $(lx "if you switch Node versions (nvm), run ./kafra.sh autostart on again." "kalau versi Node diganti (nvm), jalankan ./kafra.sh autostart on lagi.")${OFF}"
+  printf '%s\n' "  ${DIM}Node: $node — $(lx "if you switch Node versions (nvm), run $CMD autostart on again." "kalau versi Node diganti (nvm), jalankan $CMD autostart on lagi.")${OFF}"
 }
 
 autostart_off() {
@@ -366,7 +391,7 @@ case "$cmd" in
       on) banner; autostart_on ;;
       off) autostart_off ;;
       status) autostart_status ;;
-      *) fail "$(lx "Usage: ./kafra.sh autostart on|off|status" "Pakai: ./kafra.sh autostart on|off|status")" ;;
+      *) fail "$(lx "Usage: $CMD autostart on|off|status" "Pakai: $CMD autostart on|off|status")" ;;
     esac ;;
   public)
     banner; setup
@@ -382,9 +407,12 @@ case "$cmd" in
     run simulate "${KAFRA_PORT:-4319}" scripts/simulate.mjs "$(lx "Six towns, ten adventurers, working until you close it." "Enam kota, sepuluh adventurer, bekerja terus sampai kamu menutupnya.")" ;;
   setup)
     banner; setup; check_agents; echo; local_notice
-    kafra "$(lx "Ready! Run ${BOLD}./kafra.sh${OFF} to open your world." "Siap! Jalankan ${BOLD}./kafra.sh${OFF} untuk membuka kotamu.")" ;;
+    kafra "$(lx "Ready! Run ${BOLD}$CMD${OFF} to open your world." "Siap! Jalankan ${BOLD}$CMD${OFF} untuk membuka kotamu.")" ;;
   test)
+    [[ -d tests ]] || fail "$(lx "The tests ship with the source: git clone https://github.com/isha93/kafra" "Test ada di source: git clone https://github.com/isha93/kafra")"
     setup; node --test tests/*.test.mjs ;;
+  version|-v|--version)
+    node -p 'require("./package.json").version' ;;
   help|-h|--help)
     usage ;;
   *)

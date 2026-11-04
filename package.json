@@ -1,9 +1,45 @@
 {
   "name": "kafra",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.1.1",
   "description": "A Ragnarok-style world for monitoring your AI coding agents, locally",
+  "keywords": [
+    "claude-code",
+    "codex",
+    "gemini-cli",
+    "ai-agents",
+    "monitoring",
+    "ragnarok",
+    "pixel-art"
+  ],
+  "homepage": "https://github.com/isha93/kafra",
+  "bugs": "https://github.com/isha93/kafra/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isha93/kafra.git"
+  },
+  "license": "MIT",
+  "author": "isha93",
   "type": "module",
+  "bin": {
+    "kafra": "kafra.sh"
+  },
+  "files": [
+    "kafra.sh",
+    "kafra.config.example.json",
+    "src/",
+    "web/",
+    "scripts/demo.mjs",
+    "scripts/fixtures.mjs",
+    "scripts/simulate.mjs",
+    "integrations/",
+    "CHANGELOG.md",
+    "!web/_*",
+    "!integrations/notifier/build/"
+  ],
+  "os": [
+    "darwin",
+    "linux"
+  ],
   "engines": {
     "node": ">=20"
   },
