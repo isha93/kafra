@@ -352,6 +352,7 @@ export class AgentSprite {
           } else if (Math.random() < 0.7) {
             fx.popText(hx + 14 * this.facing, y - 30, z, String(Math.floor(40 + Math.random() * 900)));
             sfxAt('slash', this.view, this.zoom);
+            this.town.strike(d.id);
           }
         }
         break;

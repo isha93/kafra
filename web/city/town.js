@@ -22,6 +22,8 @@ import { isStormy } from './sky.js';
 import { LONG_RUN_MS, LOW_HP } from './status.js';
 import { sfxAt } from './audio.js';
 import { t, districtName } from './i18n.js';
+import { openBugs, bugOutcome, latestTest } from './bugs.js';
+import { Monster, BUG_SLOTS } from './monster.js';
 
 /**
  * Real art for a building key when web/assets has it, else the drawn fallback.
@@ -65,6 +67,8 @@ export class Town {
     this.agents = new Map();
     this.buildings = new Map();
     this.shakes = new Map();
+    this.monsters = new Map();          // agent id → its bug in the arena
+    this.leavingMonsters = [];
     this.time = 0;
 
     this.key = growthKey(data);
@@ -210,6 +214,7 @@ export class Town {
     if (!prev || prev.town !== data.town || prev.branch !== data.branch || prev.name !== data.name || prev.tier?.id !== data.tier?.id) this.drawTitle(data);
     this.applyBuildings(data);
     this.applyAgents(data, prev);
+    this.applyBugs(data, prev);
     if (prev) this.diffCommits(prev, data);
   }
 
@@ -286,6 +291,43 @@ export class Town {
     }
   }
 
+  /**
+   * One bug in the arena per agent whose latest test run failed (bugs.js). It
+   * leaves when a run passes, or quietly when the failure drops out of the
+   * agent's recent history.
+   */
+  applyBugs(data, prev) {
+    const bugs = openBugs(data.agents);
+    for (const [id, bug] of bugs) {
+      const existing = this.monsters.get(id);
+      if (existing) { existing.update(bug); continue; }
+      const used = new Set([...this.monsters.values()].map((m) => m.slot));
+      const slot = BUG_SLOTS.findIndex((_, i) => !used.has(i));
+      if (slot < 0) continue; // a full arena: the rest wait for a free spot
+      const monster = new Monster(this, slot, bug, { appear: Boolean(prev) });
+      this.monsters.set(id, monster);
+      this.layer.addChild(monster.view);
+      if (prev) this.onEvent?.({ town: data, agent: bug.agent, type: 'bug', tool: bug.tool });
+    }
+    for (const [id, monster] of this.monsters) {
+      if (bugs.has(id)) continue;
+      const agent = data.agents.find((a) => a.id === id);
+      const how = bugOutcome(agent);
+      monster.leave(how);
+      if (how === 'slain') {
+        sfxAt('coin', monster.view, this.zoom ?? 1);
+        this.onEvent?.({ town: data, agent, type: 'slain', tool: latestTest(agent) });
+      }
+      this.monsters.delete(id);
+      this.leavingMonsters.push(monster);
+    }
+  }
+
+  /** An agent's swing in the arena lands on its own bug, if it has one. */
+  strike(agentId) {
+    this.monsters.get(agentId)?.flinch();
+  }
+
   /** Turn state changes into chat-log lines and one-off effects. */
   diffAgent(town, before, after, sprite) {
     const newest = after.tools?.[0];
@@ -342,6 +384,8 @@ export class Town {
 
     for (const v of this.villagers) v.tick(dt);
     for (const s of this.agents.values()) s.tick(dt, zoom);
+    for (const m of this.monsters.values()) m.tick(dt);
+    this.leavingMonsters = this.leavingMonsters.filter((m) => m.tick(dt) || (m.destroy(), false));
     this.declutterBubbles();
     this.tickSky(dt);
 

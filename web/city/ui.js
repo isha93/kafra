@@ -281,6 +281,14 @@ export function logEvent(ev, pick) {
       text = t('log.lowhp', { who, hp: ev.agent.hp });
       cls = 'bad';
       break;
+    case 'bug':
+      text = t('log.bug', { who, test: ev.tool?.label || ev.tool?.name || '' });
+      cls = 'bad';
+      break;
+    case 'slain':
+      text = t('log.slain', { who, test: ev.tool?.label || ev.tool?.name || '' });
+      cls = 'gold';
+      break;
     case 'arrive':
       text = t('log.arrive', { who });
       cls = 'sys';
@@ -295,7 +303,7 @@ export function logEvent(ev, pick) {
   const line = document.createElement('div');
   line.className = `line ${cls}`;
   const time = new Date(now()).toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' });
-  const kind = ev.type === 'tool' ? ev.tool.kind : ev.type === 'waiting' ? 'waiting' : ev.type === 'commit' ? 'deliver' : null;
+  const kind = ev.type === 'tool' ? ev.tool.kind : ev.type === 'waiting' ? 'waiting' : ev.type === 'commit' ? 'deliver' : ev.type === 'bug' || ev.type === 'slain' ? 'trial' : null;
   line.innerHTML = `<span class="t">${time}</span> <span class="where">[${esc(ev.town.town)}]</span> ${kind && iconFor(kind) ? icon(kind) + ' ' : ''}${esc(text)}`;
   alert(ev, text);
   if (ev.agent) line.onclick = () => pick({ type: 'agent', id: ev.agent.id });

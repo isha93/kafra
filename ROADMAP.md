@@ -20,6 +20,8 @@ would change that is opt-in and listed last.
 - Menu bar (SwiftBar), native notifications, autostart at login
 - English and Indonesian UI, following the system language
 - CI on macOS and Linux with Node 20, 22 and 24
+- Install with Homebrew (`isha93/tap/kafra`) or npm (`@isha93/kafra`)
+- Failing tests become bugs in the arena until a run passes
 - Privacy: `kafra.config.json` (hide / only / redact) and public mode
 - Synthesised sound: positional effects per activity, and generative
   background music per biome
@@ -37,7 +39,6 @@ would change that is opt-in and listed last.
 - [x] macOS menu bar icon via SwiftBar: count of agents waiting for you, native notifications
 - [ ] Native SwiftUI menu bar app (no SwiftBar needed)
 - [x] Start on login (`./kafra.sh autostart on`, a per-user LaunchAgent)
-- [ ] Install with `npx` or Homebrew
 
 ## 3. Deeper monitoring
 
@@ -57,7 +58,6 @@ would change that is opt-in and listed last.
 
 - [ ] Achievements: first commit, green streaks, a town reaching City
 - [ ] EXP and levels per adventurer
-- [ ] Failing tests appear as monsters in the arena until they pass
 - [ ] Statues for releases and git tags
 - [ ] Tier-up animation: construction, then fireworks
 

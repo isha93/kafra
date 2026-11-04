@@ -47,7 +47,7 @@ const STRINGS = {
     'civic.library.text': 'Agents reading files or searching code (Read, Grep, Glob) come here.',
     'civic.workshop.text': 'Agents running shell commands craft here. The chimney smokes harder while someone works.',
     'civic.inn.text': 'Sessions quiet for more than 30 minutes rest here.',
-    'civic.arena.text': 'Running tests. The damage numbers are for show; a red "Miss" means the tool failed.',
+    'civic.arena.text': 'Running tests. A failing test leaves a bug in the arena until a run passes; a red "Miss" means a tool failed.',
     'civic.kafra.text': 'Commits and pushes are delivered here. Every new commit sets off fireworks.',
     townhall: 'Town Hall', 'district.n': 'District {n}', 'kingdom.n': 'Kingdom {n}', 'kingdom.of': 'Kingdom of {name}', 'towns.count': '{n} towns',
 
@@ -56,6 +56,8 @@ const STRINGS = {
 
     'log.tool': '{who} {kind}: {target}', 'log.error': '{who} failed: {tool}', 'log.waiting': '{who} is waiting for you.',
     'log.longrun': '{who} has been running {tool} for {d}', 'log.lowhp': '{who} has {hp}% HP left: context almost full',
+    'log.bug': 'A bug appeared in the arena: {who}\'s {test} failed.', 'log.slain': '{who} cleared the bug: {test} passes.',
+    'bug.name': 'Bug Lv.{n}', 'bug.clear': 'Clear!',
     'log.arrive': '{who} arrived in town.', 'log.connected': 'Connected to Kafra. Watching every adventurer (read-only).',
     'log.live': 'Back to the present.', 'log.replay': 'Replay of {date} loaded.',
     'conn.live': 'live', 'conn.lost': 'disconnected, retrying',
@@ -124,7 +126,7 @@ const STRINGS = {
     'civic.library.text': 'Agent yang membaca file atau mencari kode (Read, Grep, Glob) datang ke sini.',
     'civic.workshop.text': 'Agent yang menjalankan perintah shell meracik di sini. Cerobong berasap lebih tebal saat ada yang bekerja.',
     'civic.inn.text': 'Sesi yang sudah lebih dari 30 menit diam beristirahat di sini.',
-    'civic.arena.text': 'Menjalankan test. Angka damage itu hiasan; "Miss" merah berarti tool-nya gagal.',
+    'civic.arena.text': 'Menjalankan test. Test yang gagal meninggalkan bug di arena sampai ada yang lulus; "Miss" merah berarti tool-nya gagal.',
     'civic.kafra.text': 'Commit dan push disetor ke sini. Setiap commit baru memicu kembang api.',
     townhall: 'Balai Kota', 'district.n': 'Distrik {n}', 'kingdom.n': 'Kerajaan {n}', 'kingdom.of': 'Kerajaan {name}', 'towns.count': '{n} kota',
 
@@ -133,6 +135,8 @@ const STRINGS = {
 
     'log.tool': '{who} {kind}: {target}', 'log.error': '{who} gagal: {tool}', 'log.waiting': '{who} menunggu giliranmu.',
     'log.longrun': '{who} sudah {d} menjalankan {tool}', 'log.lowhp': '{who} HP tinggal {hp}%: context hampir penuh',
+    'log.bug': 'Bug muncul di arena: {test} milik {who} gagal.', 'log.slain': '{who} membasmi bug: {test} lulus.',
+    'bug.name': 'Bug Lv.{n}', 'bug.clear': 'Beres!',
     'log.arrive': '{who} tiba di kota.', 'log.connected': 'Terhubung ke Kafra. Memantau semua adventurer (read-only).',
     'log.live': 'Kembali ke waktu sekarang.', 'log.replay': 'Replay {date} dimuat.',
     'conn.live': 'live', 'conn.lost': 'terputus, mencoba lagi',

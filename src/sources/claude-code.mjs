@@ -241,7 +241,7 @@ export async function listSessions({ maxAgeDays = 7 } = {}) {
   try {
     dirs = await readdir(PROJECTS_DIR);
   } catch {
-    return { error: `Tidak bisa membaca ${PROJECTS_DIR}`, sessions: [] };
+    return { error: `Can't read ${PROJECTS_DIR}`, sessions: [] };
   }
 
   const cutoff = Date.now() - maxAgeDays * 86_400_000;

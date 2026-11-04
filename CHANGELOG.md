@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Failing tests become bugs in the arena. An agent whose latest test run failed
+  has a bug waiting for it; the bug grows and reddens with each failure in a
+  row, flinches when the agent swings, and bursts with "Clear!" when a run
+  passes. The chat log says when one appears and when it's cleared, and replay
+  shows them too.
+
 ## v0.1.1 — install with Homebrew
 
 - `brew install isha93/tap/kafra`, then run `kafra`. The clone and
