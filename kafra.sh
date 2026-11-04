@@ -221,7 +221,7 @@ run() {
 
 # npx runs Kafra from a cache that npm may clear; launchd and SwiftBar need a real install.
 need_install() {
-  [[ $PWD != */_npx/* ]] || fail "$(lx "npx runs Kafra from a temporary cache. Install it first: brew install isha93/tap/kafra (or npm install -g kafra)" "npx menjalankan Kafra dari cache sementara. Pasang dulu: brew install isha93/tap/kafra (atau npm install -g kafra)")"
+  [[ $PWD != */_npx/* ]] || fail "$(lx "npx runs Kafra from a temporary cache. Install it first: brew install isha93/tap/kafra (or npm install -g @isha93/kafra)" "npx menjalankan Kafra dari cache sementara. Pasang dulu: brew install isha93/tap/kafra (atau npm install -g @isha93/kafra)")"
 }
 
 install_menubar() {

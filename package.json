@@ -1,5 +1,5 @@
 {
-  "name": "kafra",
+  "name": "@isha93/kafra",
   "version": "0.1.1",
   "description": "A Ragnarok-style world for monitoring your AI coding agents, locally",
   "keywords": [
@@ -49,5 +49,8 @@
     "demo": "node scripts/demo.mjs",
     "test": "node --test tests/*.test.mjs",
     "simulate": "node scripts/simulate.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

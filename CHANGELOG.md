@@ -8,8 +8,8 @@
   upgrade never overwrites them. Autostart and the menu bar point at Homebrew's
   stable `opt/` path, so they keep working after `brew upgrade`.
 - `kafra version` prints the version.
-- The package is ready for npm (`npx kafra`), and CI checks that it holds only
-  files from git and runs after install.
+- On npm as `@isha93/kafra` (`npx @isha93/kafra`); CI checks that the package
+  holds only files from git and runs after install.
 - Server startup messages are in English.
 
 ## v0.1.0 — first public release
