@@ -1,6 +1,6 @@
 {
   "name": "@isha93/kafra",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A Ragnarok-style world for monitoring your AI coding agents, locally",
   "keywords": [
     "claude-code",

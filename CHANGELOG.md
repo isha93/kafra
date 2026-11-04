@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.1.3 — base levels
 
 - Base levels. Every class in every town is one adventurer whose EXP adds up
   across sessions: +1 per successful tool, +3 per file built, +5 per passing
